@@ -15,7 +15,8 @@ export function temperature(celsius: number, units: Units): number {
 export function formatTemp(celsius: number, units: Units): string {
   // Avoid printing "-0°".
   const value = temperature(celsius, units);
-  return `${value === 0 ? 0 : value}°`;
+  // A real minus sign (−) reads better than a hyphen at large sizes.
+  return value < 0 ? `−${Math.abs(value)}°` : `${value === 0 ? 0 : value}°`;
 }
 
 export function formatWind(metresPerSecond: number, units: Units): string {

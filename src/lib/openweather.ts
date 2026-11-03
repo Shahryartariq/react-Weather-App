@@ -1,8 +1,9 @@
 import "server-only";
 
 import sample from "./fixtures/sample.json";
+import { conditionFromCode, isDaytime } from "./conditions";
 import { buildSnapshot } from "./forecast";
-import type { OWAir, OWCurrent, OWForecast, OWGeoResult, Place, Snapshot } from "./types";
+import type { Condition, OWAir, OWCurrent, OWForecast, OWGeoResult, Place, Snapshot } from "./types";
 
 const API = "https://api.openweathermap.org";
 
@@ -111,9 +112,7 @@ export async function placeAt(lat: number, lon: number): Promise<Place> {
 }
 
 export async function getSnapshot(place: Place): Promise<Snapshot> {
-  if (usingSampleData()) {
-    return buildSnapshot(place, sample.current as OWCurrent, sample.forecast as OWForecast, sample.air as OWAir);
-  }
+  if (usingSampleData()) return sampleSnapshot(place);
   const coords = { lat: place.lat, lon: place.lon };
   const [current, forecast, air] = await Promise.all([
     get<OWCurrent>("/data/2.5/weather", { ...coords, units: "metric" }, WEATHER_TTL),
@@ -122,4 +121,74 @@ export async function getSnapshot(place: Place): Promise<Snapshot> {
     get<OWAir>("/data/2.5/air_pollution", coords, WEATHER_TTL).catch(() => null),
   ]);
   return buildSnapshot(place, current, forecast, air);
+}
+
+export interface Brief {
+  temp: number;
+  condition: Condition;
+  isDay: boolean;
+}
+
+/** Just the current temperature and sky, for the "Around the world" strip. One API call. */
+export async function getBrief(place: Place): Promise<Brief> {
+  if (usingSampleData()) {
+    if (Math.abs(place.lat - 33.694) < 0.1 && Math.abs(place.lon - 73.065) < 0.1) {
+      return { temp: sample.current.main.temp, condition: "clear", isDay: true };
+    }
+    // Plausible, stable sample values: cooler further from the equator, varied skies.
+    const codes = [800, 801, 803, 500, 800, 802, 804, 800];
+    const index = Math.abs(Math.round(place.lat * 7 + place.lon)) % codes.length;
+    return {
+      temp: Math.round((31 - Math.abs(place.lat) * 0.38 + (index - 3)) * 10) / 10,
+      condition: conditionFromCode(codes[index]),
+      isDay: (index + Math.round(place.lon / 15)) % 3 !== 0,
+    };
+  }
+  const current = await get<OWCurrent>(
+    "/data/2.5/weather",
+    { lat: place.lat, lon: place.lon, units: "metric" },
+    WEATHER_TTL,
+  );
+  return {
+    temp: current.main.temp,
+    condition: conditionFromCode(current.weather[0]?.id ?? 800),
+    isDay: isDaytime(current.dt, current.sys.sunrise, current.sys.sunset),
+  };
+}
+
+const SAMPLE_CODES: Record<Condition, number> = {
+  clear: 800, partly: 801, clouds: 804, drizzle: 300, rain: 500, thunder: 211, snow: 600, mist: 741,
+};
+
+/**
+ * Sample data shaped for each place: the same local clock times as the fixture (afternoon,
+ * same sunrise), temperatures and sky matching the "Around the world" strip.
+ */
+async function sampleSnapshot(place: Place): Promise<Snapshot> {
+  // The fixture itself was recorded for Islamabad.
+  if (Math.abs(place.lat - 33.694) < 0.1 && Math.abs(place.lon - 73.065) < 0.1) {
+    return buildSnapshot(place, sample.current as OWCurrent, sample.forecast as OWForecast, sample.air as OWAir);
+  }
+  const current = structuredClone(sample.current) as OWCurrent;
+  const forecast = structuredClone(sample.forecast) as OWForecast;
+  const brief = await getBrief(place);
+  const offset = Math.round(place.lon / 15) * 3600;
+  const shift = current.timezone - offset; // keeps local wall-clock times the same
+  const delta = brief.temp - current.main.temp;
+
+  current.timezone = forecast.city.timezone = offset;
+  current.dt += shift;
+  current.sys.sunrise += shift;
+  current.sys.sunset += shift;
+  forecast.city.sunrise = current.sys.sunrise;
+  forecast.city.sunset = current.sys.sunset;
+  for (const key of ["temp", "feels_like", "temp_min", "temp_max"] as const) current.main[key] += delta;
+  current.weather = [{ ...current.weather[0], id: SAMPLE_CODES[brief.condition], description: "" }];
+  for (const item of forecast.list) {
+    item.dt += shift;
+    item.main.temp += delta;
+    item.main.temp_min += delta;
+    item.main.temp_max += delta;
+  }
+  return buildSnapshot(place, current, forecast, sample.air as OWAir);
 }

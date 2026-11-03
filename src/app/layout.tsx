@@ -3,20 +3,34 @@ import "./globals.css";
 
 import type { Metadata, Viewport } from "next";
 
+import { AUTHOR, SITE_DESCRIPTION, SITE_NAME, siteUrl } from "@/lib/site";
+
 export const metadata: Metadata = {
-  title: { default: "Skycast", template: "%s · Skycast" },
-  description:
-    "Current weather, the next 24 hours and a 5-day forecast for any city, with wind, humidity, sunrise and air quality.",
-  applicationName: "Skycast",
-  authors: [{ name: "Muhammad Shehryar", url: "https://github.com/Shahryartariq" }],
-  openGraph: { type: "website", siteName: "Skycast" },
+  metadataBase: siteUrl(),
+  title: { default: SITE_NAME, template: `%s · ${SITE_NAME}` },
+  description: SITE_DESCRIPTION,
+  applicationName: SITE_NAME,
+  authors: [AUTHOR],
+  creator: AUTHOR.name,
+  keywords: ["weather", "weather forecast", "5-day forecast", "hourly forecast", "air quality", "Next.js"],
+  category: "weather",
+  formatDetection: { telephone: false, address: false },
+  openGraph: {
+    type: "website",
+    siteName: SITE_NAME,
+    title: `${SITE_NAME}: weather forecast for any city`,
+    description: SITE_DESCRIPTION,
+    url: "/",
+    locale: "en_US",
+  },
+  twitter: { card: "summary_large_image", title: SITE_NAME, description: SITE_DESCRIPTION },
 };
 
 export const viewport: Viewport = {
   colorScheme: "light dark",
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#F4F6F8" },
-    { media: "(prefers-color-scheme: dark)", color: "#0E1217" },
+    { media: "(prefers-color-scheme: light)", color: "#164E8C" },
+    { media: "(prefers-color-scheme: dark)", color: "#0B1530" },
   ],
 };
 

@@ -1,11 +1,19 @@
 import { NextResponse, type NextRequest } from "next/server";
 
+import { cityBySlug } from "@/lib/cities";
+
 /**
  * A fresh nonce per request for a strict Content Security Policy: only scripts and
  * styles that Next.js itself rendered with the nonce may run. Pages here are dynamic
  * (they depend on the URL), so nonces cost nothing extra.
  */
 export function proxy(request: NextRequest) {
+  // Unknown city pages get a real 404 status before any HTML is streamed.
+  const city = /^\/weather\/([^/]+)\/?$/.exec(request.nextUrl.pathname);
+  if (city && !cityBySlug(decodeURIComponent(city[1]))) {
+    return NextResponse.rewrite(new URL("/_unknown-city", request.url));
+  }
+
   const nonce = Buffer.from(crypto.randomUUID()).toString("base64");
   const isDev = process.env.NODE_ENV === "development";
 
