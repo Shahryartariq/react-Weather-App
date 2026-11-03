@@ -1,0 +1,923 @@
+{
+  "current": {
+    "dt": 1793784600,
+    "timezone": 18000,
+    "name": "Islamabad",
+    "sys": {
+      "country": "PK",
+      "sunrise": 1793756460,
+      "sunset": 1793794440
+    },
+    "main": {
+      "temp": 24.3,
+      "feels_like": 23.6,
+      "temp_min": 23.1,
+      "temp_max": 25,
+      "pressure": 1016,
+      "humidity": 38
+    },
+    "weather": [
+      {
+        "id": 800,
+        "main": "Clear",
+        "description": "clear sky",
+        "icon": "01d"
+      }
+    ],
+    "wind": {
+      "speed": 3.1,
+      "deg": 315,
+      "gust": 5.4
+    },
+    "clouds": {
+      "all": 4
+    },
+    "visibility": 10000
+  },
+  "forecast": {
+    "list": [
+      {
+        "dt": 1793793600,
+        "main": {
+          "temp": 22.9,
+          "temp_min": 22.3,
+          "temp_max": 23.3
+        },
+        "weather": [
+          {
+            "id": 800,
+            "main": "Clear",
+            "description": "clear sky",
+            "icon": "01n"
+          }
+        ],
+        "pop": 0,
+        "sys": {
+          "pod": "n"
+        }
+      },
+      {
+        "dt": 1793804400,
+        "main": {
+          "temp": 18,
+          "temp_min": 17.4,
+          "temp_max": 18.4
+        },
+        "weather": [
+          {
+            "id": 800,
+            "main": "Clear",
+            "description": "clear sky",
+            "icon": "01n"
+          }
+        ],
+        "pop": 0,
+        "sys": {
+          "pod": "n"
+        }
+      },
+      {
+        "dt": 1793815200,
+        "main": {
+          "temp": 13.1,
+          "temp_min": 12.5,
+          "temp_max": 13.5
+        },
+        "weather": [
+          {
+            "id": 800,
+            "main": "Clear",
+            "description": "clear sky",
+            "icon": "01n"
+          }
+        ],
+        "pop": 0,
+        "sys": {
+          "pod": "n"
+        }
+      },
+      {
+        "dt": 1793826000,
+        "main": {
+          "temp": 11,
+          "temp_min": 10.4,
+          "temp_max": 11.4
+        },
+        "weather": [
+          {
+            "id": 800,
+            "main": "Clear",
+            "description": "clear sky",
+            "icon": "01n"
+          }
+        ],
+        "pop": 0,
+        "sys": {
+          "pod": "n"
+        }
+      },
+      {
+        "dt": 1793836800,
+        "main": {
+          "temp": 13.1,
+          "temp_min": 12.5,
+          "temp_max": 13.5
+        },
+        "weather": [
+          {
+            "id": 800,
+            "main": "Clear",
+            "description": "clear sky",
+            "icon": "01n"
+          }
+        ],
+        "pop": 0,
+        "sys": {
+          "pod": "n"
+        }
+      },
+      {
+        "dt": 1793847600,
+        "main": {
+          "temp": 18,
+          "temp_min": 17.4,
+          "temp_max": 18.4
+        },
+        "weather": [
+          {
+            "id": 800,
+            "main": "Clear",
+            "description": "clear sky",
+            "icon": "01d"
+          }
+        ],
+        "pop": 0,
+        "sys": {
+          "pod": "d"
+        }
+      },
+      {
+        "dt": 1793858400,
+        "main": {
+          "temp": 22.9,
+          "temp_min": 22.3,
+          "temp_max": 23.3
+        },
+        "weather": [
+          {
+            "id": 800,
+            "main": "Clear",
+            "description": "clear sky",
+            "icon": "01d"
+          }
+        ],
+        "pop": 0,
+        "sys": {
+          "pod": "d"
+        }
+      },
+      {
+        "dt": 1793869200,
+        "main": {
+          "temp": 25,
+          "temp_min": 24.4,
+          "temp_max": 25.4
+        },
+        "weather": [
+          {
+            "id": 800,
+            "main": "Clear",
+            "description": "clear sky",
+            "icon": "01d"
+          }
+        ],
+        "pop": 0,
+        "sys": {
+          "pod": "d"
+        }
+      },
+      {
+        "dt": 1793880000,
+        "main": {
+          "temp": 22.9,
+          "temp_min": 22.3,
+          "temp_max": 23.3
+        },
+        "weather": [
+          {
+            "id": 800,
+            "main": "Clear",
+            "description": "clear sky",
+            "icon": "01n"
+          }
+        ],
+        "pop": 0,
+        "sys": {
+          "pod": "n"
+        }
+      },
+      {
+        "dt": 1793890800,
+        "main": {
+          "temp": 18,
+          "temp_min": 17.4,
+          "temp_max": 18.4
+        },
+        "weather": [
+          {
+            "id": 800,
+            "main": "Clear",
+            "description": "clear sky",
+            "icon": "01n"
+          }
+        ],
+        "pop": 0,
+        "sys": {
+          "pod": "n"
+        }
+      },
+      {
+        "dt": 1793901600,
+        "main": {
+          "temp": 13.1,
+          "temp_min": 12.5,
+          "temp_max": 13.5
+        },
+        "weather": [
+          {
+            "id": 800,
+            "main": "Clear",
+            "description": "clear sky",
+            "icon": "01n"
+          }
+        ],
+        "pop": 0,
+        "sys": {
+          "pod": "n"
+        }
+      },
+      {
+        "dt": 1793912400,
+        "main": {
+          "temp": 12,
+          "temp_min": 11.4,
+          "temp_max": 12.4
+        },
+        "weather": [
+          {
+            "id": 800,
+            "main": "Clear",
+            "description": "clear sky",
+            "icon": "01n"
+          }
+        ],
+        "pop": 0,
+        "sys": {
+          "pod": "n"
+        }
+      },
+      {
+        "dt": 1793923200,
+        "main": {
+          "temp": 14.1,
+          "temp_min": 13.5,
+          "temp_max": 14.5
+        },
+        "weather": [
+          {
+            "id": 800,
+            "main": "Clear",
+            "description": "clear sky",
+            "icon": "01n"
+          }
+        ],
+        "pop": 0,
+        "sys": {
+          "pod": "n"
+        }
+      },
+      {
+        "dt": 1793934000,
+        "main": {
+          "temp": 19,
+          "temp_min": 18.4,
+          "temp_max": 19.4
+        },
+        "weather": [
+          {
+            "id": 801,
+            "main": "Clouds",
+            "description": "few clouds",
+            "icon": "02d"
+          }
+        ],
+        "pop": 0,
+        "sys": {
+          "pod": "d"
+        }
+      },
+      {
+        "dt": 1793944800,
+        "main": {
+          "temp": 23.9,
+          "temp_min": 23.3,
+          "temp_max": 24.3
+        },
+        "weather": [
+          {
+            "id": 801,
+            "main": "Clouds",
+            "description": "few clouds",
+            "icon": "02d"
+          }
+        ],
+        "pop": 0,
+        "sys": {
+          "pod": "d"
+        }
+      },
+      {
+        "dt": 1793955600,
+        "main": {
+          "temp": 26,
+          "temp_min": 25.4,
+          "temp_max": 26.4
+        },
+        "weather": [
+          {
+            "id": 801,
+            "main": "Clouds",
+            "description": "few clouds",
+            "icon": "02d"
+          }
+        ],
+        "pop": 0,
+        "sys": {
+          "pod": "d"
+        }
+      },
+      {
+        "dt": 1793966400,
+        "main": {
+          "temp": 23.9,
+          "temp_min": 23.3,
+          "temp_max": 24.3
+        },
+        "weather": [
+          {
+            "id": 800,
+            "main": "Clear",
+            "description": "clear sky",
+            "icon": "01n"
+          }
+        ],
+        "pop": 0,
+        "sys": {
+          "pod": "n"
+        }
+      },
+      {
+        "dt": 1793977200,
+        "main": {
+          "temp": 19,
+          "temp_min": 18.4,
+          "temp_max": 19.4
+        },
+        "weather": [
+          {
+            "id": 800,
+            "main": "Clear",
+            "description": "clear sky",
+            "icon": "01n"
+          }
+        ],
+        "pop": 0,
+        "sys": {
+          "pod": "n"
+        }
+      },
+      {
+        "dt": 1793988000,
+        "main": {
+          "temp": 14.1,
+          "temp_min": 13.5,
+          "temp_max": 14.5
+        },
+        "weather": [
+          {
+            "id": 800,
+            "main": "Clear",
+            "description": "clear sky",
+            "icon": "01n"
+          }
+        ],
+        "pop": 0,
+        "sys": {
+          "pod": "n"
+        }
+      },
+      {
+        "dt": 1793998800,
+        "main": {
+          "temp": 9.5,
+          "temp_min": 8.9,
+          "temp_max": 9.9
+        },
+        "weather": [
+          {
+            "id": 803,
+            "main": "Clouds",
+            "description": "broken clouds",
+            "icon": "04n"
+          }
+        ],
+        "pop": 0,
+        "sys": {
+          "pod": "n"
+        }
+      },
+      {
+        "dt": 1794009600,
+        "main": {
+          "temp": 11.6,
+          "temp_min": 11,
+          "temp_max": 12
+        },
+        "weather": [
+          {
+            "id": 803,
+            "main": "Clouds",
+            "description": "broken clouds",
+            "icon": "04n"
+          }
+        ],
+        "pop": 0,
+        "sys": {
+          "pod": "n"
+        }
+      },
+      {
+        "dt": 1794020400,
+        "main": {
+          "temp": 16.5,
+          "temp_min": 15.9,
+          "temp_max": 16.9
+        },
+        "weather": [
+          {
+            "id": 803,
+            "main": "Clouds",
+            "description": "broken clouds",
+            "icon": "04d"
+          }
+        ],
+        "pop": 0,
+        "sys": {
+          "pod": "d"
+        }
+      },
+      {
+        "dt": 1794031200,
+        "main": {
+          "temp": 21.4,
+          "temp_min": 20.8,
+          "temp_max": 21.8
+        },
+        "weather": [
+          {
+            "id": 803,
+            "main": "Clouds",
+            "description": "broken clouds",
+            "icon": "04d"
+          }
+        ],
+        "pop": 0,
+        "sys": {
+          "pod": "d"
+        }
+      },
+      {
+        "dt": 1794042000,
+        "main": {
+          "temp": 23.5,
+          "temp_min": 22.9,
+          "temp_max": 23.9
+        },
+        "weather": [
+          {
+            "id": 803,
+            "main": "Clouds",
+            "description": "broken clouds",
+            "icon": "04d"
+          }
+        ],
+        "pop": 0,
+        "sys": {
+          "pod": "d"
+        }
+      },
+      {
+        "dt": 1794052800,
+        "main": {
+          "temp": 21.4,
+          "temp_min": 20.8,
+          "temp_max": 21.8
+        },
+        "weather": [
+          {
+            "id": 500,
+            "main": "Rain",
+            "description": "light rain",
+            "icon": "10n"
+          }
+        ],
+        "pop": 0.46,
+        "sys": {
+          "pod": "n"
+        }
+      },
+      {
+        "dt": 1794063600,
+        "main": {
+          "temp": 16.5,
+          "temp_min": 15.9,
+          "temp_max": 16.9
+        },
+        "weather": [
+          {
+            "id": 500,
+            "main": "Rain",
+            "description": "light rain",
+            "icon": "10n"
+          }
+        ],
+        "pop": 0.46,
+        "sys": {
+          "pod": "n"
+        }
+      },
+      {
+        "dt": 1794074400,
+        "main": {
+          "temp": 11.6,
+          "temp_min": 11,
+          "temp_max": 12
+        },
+        "weather": [
+          {
+            "id": 500,
+            "main": "Rain",
+            "description": "light rain",
+            "icon": "10n"
+          }
+        ],
+        "pop": 0.46,
+        "sys": {
+          "pod": "n"
+        }
+      },
+      {
+        "dt": 1794085200,
+        "main": {
+          "temp": 7,
+          "temp_min": 6.4,
+          "temp_max": 7.4
+        },
+        "weather": [
+          {
+            "id": 804,
+            "main": "Clouds",
+            "description": "overcast clouds",
+            "icon": "04n"
+          }
+        ],
+        "pop": 0.2,
+        "sys": {
+          "pod": "n"
+        }
+      },
+      {
+        "dt": 1794096000,
+        "main": {
+          "temp": 9.1,
+          "temp_min": 8.5,
+          "temp_max": 9.5
+        },
+        "weather": [
+          {
+            "id": 804,
+            "main": "Clouds",
+            "description": "overcast clouds",
+            "icon": "04n"
+          }
+        ],
+        "pop": 0.2,
+        "sys": {
+          "pod": "n"
+        }
+      },
+      {
+        "dt": 1794106800,
+        "main": {
+          "temp": 14,
+          "temp_min": 13.4,
+          "temp_max": 14.4
+        },
+        "weather": [
+          {
+            "id": 501,
+            "main": "Rain",
+            "description": "moderate rain",
+            "icon": "10d"
+          }
+        ],
+        "pop": 0.74,
+        "sys": {
+          "pod": "d"
+        }
+      },
+      {
+        "dt": 1794117600,
+        "main": {
+          "temp": 18.9,
+          "temp_min": 18.3,
+          "temp_max": 19.3
+        },
+        "weather": [
+          {
+            "id": 211,
+            "main": "Thunderstorm",
+            "description": "thunderstorm",
+            "icon": "11d"
+          }
+        ],
+        "pop": 0.82,
+        "sys": {
+          "pod": "d"
+        }
+      },
+      {
+        "dt": 1794128400,
+        "main": {
+          "temp": 21,
+          "temp_min": 20.4,
+          "temp_max": 21.4
+        },
+        "weather": [
+          {
+            "id": 211,
+            "main": "Thunderstorm",
+            "description": "thunderstorm",
+            "icon": "11d"
+          }
+        ],
+        "pop": 0.82,
+        "sys": {
+          "pod": "d"
+        }
+      },
+      {
+        "dt": 1794139200,
+        "main": {
+          "temp": 18.9,
+          "temp_min": 18.3,
+          "temp_max": 19.3
+        },
+        "weather": [
+          {
+            "id": 501,
+            "main": "Rain",
+            "description": "moderate rain",
+            "icon": "10n"
+          }
+        ],
+        "pop": 0.74,
+        "sys": {
+          "pod": "n"
+        }
+      },
+      {
+        "dt": 1794150000,
+        "main": {
+          "temp": 14,
+          "temp_min": 13.4,
+          "temp_max": 14.4
+        },
+        "weather": [
+          {
+            "id": 501,
+            "main": "Rain",
+            "description": "moderate rain",
+            "icon": "10n"
+          }
+        ],
+        "pop": 0.74,
+        "sys": {
+          "pod": "n"
+        }
+      },
+      {
+        "dt": 1794160800,
+        "main": {
+          "temp": 9.1,
+          "temp_min": 8.5,
+          "temp_max": 9.5
+        },
+        "weather": [
+          {
+            "id": 804,
+            "main": "Clouds",
+            "description": "overcast clouds",
+            "icon": "04n"
+          }
+        ],
+        "pop": 0.2,
+        "sys": {
+          "pod": "n"
+        }
+      },
+      {
+        "dt": 1794171600,
+        "main": {
+          "temp": 11,
+          "temp_min": 10.4,
+          "temp_max": 11.4
+        },
+        "weather": [
+          {
+            "id": 802,
+            "main": "Clouds",
+            "description": "scattered clouds",
+            "icon": "03n"
+          }
+        ],
+        "pop": 0,
+        "sys": {
+          "pod": "n"
+        }
+      },
+      {
+        "dt": 1794182400,
+        "main": {
+          "temp": 13.1,
+          "temp_min": 12.5,
+          "temp_max": 13.5
+        },
+        "weather": [
+          {
+            "id": 802,
+            "main": "Clouds",
+            "description": "scattered clouds",
+            "icon": "03n"
+          }
+        ],
+        "pop": 0,
+        "sys": {
+          "pod": "n"
+        }
+      },
+      {
+        "dt": 1794193200,
+        "main": {
+          "temp": 18,
+          "temp_min": 17.4,
+          "temp_max": 18.4
+        },
+        "weather": [
+          {
+            "id": 802,
+            "main": "Clouds",
+            "description": "scattered clouds",
+            "icon": "03d"
+          }
+        ],
+        "pop": 0,
+        "sys": {
+          "pod": "d"
+        }
+      },
+      {
+        "dt": 1794204000,
+        "main": {
+          "temp": 22.9,
+          "temp_min": 22.3,
+          "temp_max": 23.3
+        },
+        "weather": [
+          {
+            "id": 802,
+            "main": "Clouds",
+            "description": "scattered clouds",
+            "icon": "03d"
+          }
+        ],
+        "pop": 0,
+        "sys": {
+          "pod": "d"
+        }
+      },
+      {
+        "dt": 1794214800,
+        "main": {
+          "temp": 25,
+          "temp_min": 24.4,
+          "temp_max": 25.4
+        },
+        "weather": [
+          {
+            "id": 802,
+            "main": "Clouds",
+            "description": "scattered clouds",
+            "icon": "03d"
+          }
+        ],
+        "pop": 0,
+        "sys": {
+          "pod": "d"
+        }
+      }
+    ],
+    "city": {
+      "timezone": 18000,
+      "sunrise": 1793756460,
+      "sunset": 1793794440
+    }
+  },
+  "air": {
+    "list": [
+      {
+        "main": {
+          "aqi": 3
+        },
+        "components": {
+          "pm2_5": 31.4,
+          "pm10": 58.2
+        }
+      }
+    ]
+  },
+  "places": [
+    {
+      "name": "Islamabad",
+      "lat": 33.6938,
+      "lon": 73.0652,
+      "country": "PK",
+      "state": "Islamabad Capital Territory"
+    },
+    {
+      "name": "Lahore",
+      "lat": 31.5656,
+      "lon": 74.3142,
+      "country": "PK",
+      "state": "Punjab"
+    },
+    {
+      "name": "Karachi",
+      "lat": 24.8608,
+      "lon": 67.0104,
+      "country": "PK",
+      "state": "Sindh"
+    },
+    {
+      "name": "Sargodha",
+      "lat": 32.0836,
+      "lon": 72.6711,
+      "country": "PK",
+      "state": "Punjab"
+    },
+    {
+      "name": "London",
+      "lat": 51.5073,
+      "lon": -0.1276,
+      "country": "GB",
+      "state": "England"
+    },
+    {
+      "name": "London",
+      "lat": 42.9834,
+      "lon": -81.233,
+      "country": "CA",
+      "state": "Ontario"
+    },
+    {
+      "name": "New York",
+      "lat": 40.7127,
+      "lon": -74.006,
+      "country": "US",
+      "state": "New York"
+    },
+    {
+      "name": "Tokyo",
+      "lat": 35.6828,
+      "lon": 139.759,
+      "country": "JP"
+    },
+    {
+      "name": "Paris",
+      "lat": 48.8589,
+      "lon": 2.32,
+      "country": "FR",
+      "state": "Ile-de-France"
+    }
+  ]
+}
