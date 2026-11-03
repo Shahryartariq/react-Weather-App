@@ -176,7 +176,7 @@ function Footer({ sample, units }: { sample: boolean; units: Units }) {
           Muhammad Shehryar
         </a>{" "}
         ·{" "}
-        <a href="https://github.com/Shahryartariq/react-Weather-App" rel="noopener">
+        <a href="https://github.com/Shahryartariq/skycast" rel="noopener">
           Source code
         </a>
       </p>
