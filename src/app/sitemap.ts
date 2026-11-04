@@ -1,19 +1,12 @@
 import type { MetadataRoute } from "next";
 
-import { CITIES, cityPath } from "@/lib/cities";
+import { CITIES, PROVINCES, cityPath, provincePath } from "@/lib/cities";
 import { siteUrl } from "@/lib/site";
 
-/** The home page and every city page. Weather changes all the time, so pages are marked hourly. */
+/** Every indexable page. Live weather means their content really does change all the time. */
 export default function sitemap(): MetadataRoute.Sitemap {
   const base = siteUrl();
-  const now = new Date();
-  return [
-    { url: new URL("/", base).toString(), lastModified: now, changeFrequency: "hourly", priority: 1 },
-    ...CITIES.map((city) => ({
-      url: new URL(cityPath(city), base).toString(),
-      lastModified: now,
-      changeFrequency: "hourly" as const,
-      priority: 0.8,
-    })),
-  ];
+  const lastModified = new Date();
+  const paths = ["/", "/air-quality", "/about", ...PROVINCES.map(provincePath), ...CITIES.map(cityPath)];
+  return paths.map((path) => ({ url: new URL(path, base).toString(), lastModified }));
 }

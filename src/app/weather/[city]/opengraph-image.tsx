@@ -1,5 +1,6 @@
 import { cityBySlug, CITIES } from "@/lib/cities";
 import { OG_SIZE, ogImage } from "@/lib/og";
+import { placeRegion } from "@/lib/query";
 
 export const alt = "City weather forecast on Skycast";
 export const size = OG_SIZE;
@@ -11,6 +12,6 @@ export function generateStaticParams() {
 
 export default async function Image({ params }: { params: Promise<{ city: string }> }) {
   const city = cityBySlug((await params).city);
-  const where = city ? [city.region, city.country].filter(Boolean).join(", ") : "";
-  return ogImage(city ? `${city.name} weather` : "Weather forecast", where || "Hourly and 5-day forecast");
+  if (!city) return ogImage("Pakistan weather", "Hourly and 5-day forecast");
+  return ogImage(`${city.name} weather`, placeRegion(city));
 }

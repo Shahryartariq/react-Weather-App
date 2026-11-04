@@ -10,7 +10,8 @@
   --shadow: 0 1px 2px rgb(16 24 40 / 5%), 0 12px 32px -16px rgb(16 24 40 / 18%);
   --radius: 18px;
   --wrap: 1120px;
-  --font: "Bricolage Grotesque Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font: var(--font-brand), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-urdu: "Jameel Noori Nastaleeq", "Noto Nastaliq Urdu", "Noto Naskh Arabic", "Segoe UI", Tahoma, sans-serif;
 
   /* Sky defaults; overridden per [data-sky]. White text passes 4.5:1 on every pair. */
   --sky-top: #44515f;
@@ -67,6 +68,7 @@ body {
 
 h1,
 h2,
+h3,
 p {
   margin: 0;
 }
@@ -181,6 +183,82 @@ main:focus {
 
 .brand-cloud {
   fill: #fff;
+}
+
+.brand-tag {
+  font-weight: 450;
+  opacity: 0.9;
+}
+
+/* Region links, in the sky under the header */
+
+.regions {
+  padding-inline: max(20px, calc((100vw - var(--wrap)) / 2));
+  padding-bottom: 6px;
+  background: var(--sky-top);
+  color: #fff;
+}
+
+.regions ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 18px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.92rem;
+}
+
+.regions a {
+  display: inline-block;
+  padding: 3px 0;
+  text-decoration-color: rgb(255 255 255 / 40%);
+}
+
+.regions a:hover {
+  text-decoration-color: #fff;
+}
+
+.regions :focus-visible {
+  outline-color: #fff;
+}
+
+/* Breadcrumb */
+
+.crumbs {
+  padding-top: 18px;
+  font-size: 0.9rem;
+}
+
+.crumbs ol {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.crumbs li + li::before {
+  content: "›";
+  margin-right: 8px;
+  opacity: 0.8;
+}
+
+.crumbs + .hero {
+  padding-top: 22px;
+}
+
+/* Urdu reads right to left, but sits on the left edge with the English around it. */
+.urdu {
+  font-family: var(--font-urdu);
+  line-height: 1.7;
+  text-align: left;
+}
+
+.hero-where .urdu {
+  display: inline-block;
+  margin-left: 12px;
 }
 
 .tools {
@@ -719,10 +797,11 @@ main:focus {
 }
 
 .aqi-1 { background: #3ba55d; }
-.aqi-2 { background: #9bc53d; }
-.aqi-3 { background: #e9b949; }
-.aqi-4 { background: #e2763a; }
-.aqi-5 { background: #c9433a; }
+.aqi-2 { background: #e9c547; }
+.aqi-3 { background: #ee9446; }
+.aqi-4 { background: #d9483b; }
+.aqi-5 { background: #8f3f97; }
+.aqi-6 { background: #7e1f32; }
 
 .details .detail-sun {
   grid-column: 1 / -1;
@@ -790,22 +869,49 @@ main:focus {
   font-size: 0.86rem;
 }
 
-/* --- Around the world ---------------------------------------------------- */
+/* --- Sections below the forecast ----------------------------------------- */
 
-.world {
+.section {
   max-width: calc(var(--wrap) + 40px);
-  margin: 64px auto 0;
+  margin: 56px auto 0;
   padding: 0 20px;
 }
 
-.world h2 {
-  margin-bottom: 16px;
+.section h2 {
+  margin-bottom: 14px;
   font-size: 1.35rem;
   font-weight: 650;
   letter-spacing: -0.015em;
 }
 
-.world-now {
+.section h3 {
+  margin: 28px 0 10px;
+  font-size: 1.05rem;
+  font-weight: 650;
+}
+
+.prose {
+  max-width: 68ch;
+  font-size: 1.04rem;
+  line-height: 1.6;
+}
+
+.prose + .prose {
+  margin-top: 12px;
+}
+
+.prose a,
+.section-more a,
+.detail-note a {
+  color: var(--accent);
+}
+
+.section-more {
+  margin-top: 14px;
+  font-weight: 600;
+}
+
+.city-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(168px, 1fr));
   gap: 12px;
@@ -814,14 +920,15 @@ main:focus {
   list-style: none;
 }
 
-.world-now a {
+.city-grid a {
   display: grid;
   grid-template-columns: 1fr auto;
   grid-template-areas:
     "name icon"
-    "country temp";
+    "region temp";
   align-items: center;
   gap: 2px 10px;
+  height: 100%;
   padding: 14px 16px;
   border: 1px solid var(--line);
   border-radius: 14px;
@@ -830,28 +937,28 @@ main:focus {
   transition: border-color 0.15s ease, transform 0.15s ease;
 }
 
-.world-now a:hover {
+.city-grid a:hover {
   border-color: var(--accent);
   transform: translateY(-1px);
 }
 
-.world-name {
+.city-name {
   grid-area: name;
   font-weight: 600;
 }
 
-.world-country {
-  grid-area: country;
+.city-region {
+  grid-area: region;
   color: var(--muted);
   font-size: 0.85rem;
 }
 
-.world-now .wx-icon {
+.city-grid .wx-icon {
   grid-area: icon;
   justify-self: end;
 }
 
-.world-temp {
+.city-temp {
   grid-area: temp;
   justify-self: end;
   font-size: 1.35rem;
@@ -859,48 +966,367 @@ main:focus {
   font-variant-numeric: tabular-nums;
 }
 
-.world-all {
+/* Key numbers about a city */
+
+.facts {
   display: flex;
   flex-wrap: wrap;
-  align-items: baseline;
-  gap: 6px 12px;
-  margin-top: 18px;
-  color: var(--muted);
-  font-size: 0.92rem;
+  gap: 14px 36px;
+  margin: 20px 0 0;
+  padding: 0;
+  list-style: none;
+  font-weight: 600;
 }
 
-.world-all ul {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px 14px;
+.facts span {
+  display: block;
+  color: var(--muted);
+  font-size: 0.84rem;
+  font-weight: 400;
+}
+
+/* Monthly climate */
+
+.climate-scroll {
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.climate-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+}
+
+.climate-table th,
+.climate-table td {
+  padding: 9px 16px;
+  border-top: 1px solid var(--line);
+  text-align: right;
+  white-space: nowrap;
+}
+
+.climate-table thead th {
+  border-top: 0;
+  color: var(--muted);
+  font-size: 0.84rem;
+  font-weight: 500;
+}
+
+.climate-table th:first-child {
+  text-align: left;
+  font-weight: 600;
+}
+
+.climate-table thead th:first-child {
+  font-weight: 500;
+}
+
+.climate-table tr[aria-current="true"] {
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+}
+
+.climate-bar-cell {
+  width: 34%;
+  min-width: 120px;
+}
+
+.climate-bar {
+  display: block;
+  width: 100%;
+}
+
+/* Questions */
+
+.faq {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 22px 40px;
+  margin: 0;
+}
+
+.faq dt {
+  font-weight: 620;
+}
+
+.faq dd {
+  margin: 4px 0 0;
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+/* Province groups on the home page */
+
+.provinces {
+  columns: 300px;
+  column-gap: 16px;
+}
+
+.province-card {
+  margin-bottom: 16px;
+  break-inside: avoid;
+}
+
+.province-card h3 {
+  margin: 0 0 6px;
+}
+
+.province-card h3 a {
+  text-decoration-color: var(--line);
+}
+
+.province-card ul {
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-.world-all a {
-  color: var(--ink);
-  text-decoration-color: var(--line);
+.province-card li a {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 6px 0;
+  border-top: 1px solid var(--line);
+  text-decoration: none;
+  font-variant-numeric: tabular-nums;
 }
 
-.world-all a:hover {
-  text-decoration-color: var(--accent);
+.province-card li a:hover {
+  color: var(--accent);
+}
+
+/* The national view in the sky */
+
+.nation {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+  align-items: center;
+  gap: 24px 48px;
+  padding: 36px 0 12px;
+}
+
+.nation h1,
+.simple-hero h1 {
+  font-size: clamp(2.3rem, 1.7rem + 2.6vw, 3.6rem);
+  font-weight: 620;
+  line-height: 1.05;
+  letter-spacing: -0.025em;
+}
+
+.nation-urdu {
+  margin-top: 6px;
+  font-size: 1.2rem;
+}
+
+.nation-summary {
+  max-width: 54ch;
+  margin-top: 16px;
+  font-size: 1.08rem;
+  line-height: 1.55;
+}
+
+.nation-time {
+  margin-top: 10px;
+  font-size: 0.95rem;
+  opacity: 0.92;
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin: 24px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.stats a,
+.stats div {
+  display: grid;
+  gap: 1px;
+  height: 100%;
+  padding: 12px 14px;
+  border: 1px solid rgb(255 255 255 / 24%);
+  border-radius: 14px;
+  background: rgb(255 255 255 / 10%);
+  text-decoration: none;
+}
+
+.stats a:hover {
+  background: rgb(255 255 255 / 18%);
+}
+
+.stat-label {
+  font-size: 0.84rem;
+  opacity: 0.92;
+}
+
+.stat-value {
+  font-size: 1.3rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
+}
+
+.stat-place {
+  font-size: 0.94rem;
+}
+
+.pk-map {
+  display: block;
+  width: 100%;
+  max-width: 460px;
+  margin-inline: auto;
+  overflow: visible;
+}
+
+.pk-dot {
+  stroke: rgb(255 255 255 / 85%);
+  stroke-width: 1.5;
+}
+
+.pk-label {
+  fill: #fff;
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.pk-temp {
+  font-weight: 700;
+}
+
+.pk-leader {
+  stroke: rgb(255 255 255 / 60%);
+  stroke-width: 1;
+}
+
+.sky-flush {
+  padding-bottom: 36px;
+}
+
+.simple-hero {
+  max-width: 760px;
+  padding: 28px 0 8px;
+}
+
+.simple-hero p {
+  margin-top: 12px;
+  font-size: 1.08rem;
+  line-height: 1.55;
+}
+
+.simple-hero .urdu {
+  margin-top: 4px;
+  font-size: 1.2rem;
+}
+
+/* Air quality ranking */
+
+.aqi-table th:nth-child(2),
+.aqi-table th:nth-child(3),
+.aqi-table td:nth-child(2),
+.aqi-table td:nth-child(3) {
+  text-align: left;
+}
+
+.aqi-table .aqi-value {
+  font-weight: 650;
+}
+
+.aqi-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.aqi-table a {
+  text-underline-offset: 0.2em;
+}
+
+.aqi-key {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.aqi-key li {
+  display: grid;
+  grid-template-columns: 12px 5.5rem minmax(0, 1fr);
+  align-items: baseline;
+  gap: 10px;
+}
+
+.aqi-key strong {
+  grid-column: 3;
+  font-weight: 620;
+}
+
+.aqi-key .aqi {
+  display: inline-block;
+}
+
+.aqi-key .aqi-range {
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.aqi-key .aqi-advice {
+  grid-column: 3;
+  color: var(--muted);
+  font-size: 0.92rem;
 }
 
 /* --- Footer -------------------------------------------------------------- */
 
 .footer {
-  display: grid;
-  gap: 6px;
   max-width: calc(var(--wrap) + 40px);
-  margin: 40px auto 0;
-  padding: 24px 20px 40px;
+  margin: 64px auto 0;
+  padding: 28px 20px 40px;
+  border-top: 1px solid var(--line);
   color: var(--muted);
-  font-size: 0.88rem;
+  font-size: 0.9rem;
 }
 
 .footer a {
   color: var(--ink);
+  text-decoration-color: var(--line);
+}
+
+.footer a:hover {
+  text-decoration-color: var(--accent);
+}
+
+.footer-links {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 24px;
+}
+
+.footer h2 {
+  margin-bottom: 8px;
+  color: var(--ink);
+  font-size: 0.92rem;
+  font-weight: 650;
+}
+
+.footer ul {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.footer-credits {
+  display: grid;
+  gap: 6px;
+  margin-top: 28px;
+  padding-top: 18px;
+  border-top: 1px solid var(--line);
 }
 
 .sample-badge {
@@ -919,6 +1345,10 @@ main:focus {
     grid-template-columns: minmax(0, 1fr);
     margin-top: -56px;
   }
+
+  .nation {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 
 @media (max-width: 640px) {
@@ -932,14 +1362,32 @@ main:focus {
     padding-bottom: 4px;
   }
 
-  .world {
-    margin-top: 48px;
+  .section {
+    margin-top: 44px;
     padding: 0 12px;
   }
 
-  .world-now {
+  .city-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 8px;
+  }
+
+  .faq {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .footer-links {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .climate-table th,
+  .climate-table td {
+    padding: 8px 10px;
+  }
+
+  /* The numbers matter more than the bars on a narrow screen. */
+  .climate-bar-cell {
+    display: none;
   }
 
   .tools {

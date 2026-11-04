@@ -4,7 +4,7 @@ import { conditionFromCode, conditionLabel, skyFor } from "./conditions";
 import sample from "./fixtures/sample.json";
 import { compass, dewPoint, formatPressure, formatTemp, formatVisibility, formatWind } from "./format";
 import { buildAir, buildDaily, buildHourly, buildSnapshot } from "./forecast";
-import { DEFAULT_PLACE, parseLocation, parseUnits, placeHref } from "./query";
+import { parseLocation, parseUnits, placeHref, placeRegion } from "./query";
 import { dayLabel, formatClock, formatHour, formatOffset, localDay } from "./time";
 import type { OWAir, OWCurrent, OWForecast } from "./types";
 
@@ -142,7 +142,7 @@ describe("forecast", () => {
   });
 
   it("assembles a full snapshot", () => {
-    const snapshot = buildSnapshot(DEFAULT_PLACE, current, forecast, air);
+    const snapshot = buildSnapshot({ name: "Islamabad", country: "PK", lat: 33.694, lon: 73.065 }, current, forecast, air);
     expect(snapshot.place.name).toBe("Islamabad");
     expect(snapshot.current.condition).toBe("clear");
     expect(snapshot.current.isDay).toBe(true);
@@ -175,22 +175,73 @@ describe("query parsing", () => {
 });
 
 describe("cities and site", async () => {
-  const { CITIES, cityBySlug, cityNear } = await import("./cities");
-  const { jsonLd, siteUrl } = await import("./site");
+  const { CITIES, PROVINCES, cityBySlug, cityNear, citiesIn, findCity, nearbyCities, suggestCities } = await import("./cities");
+  const { CITY_GUIDES, PROVINCE_GUIDES } = await import("./guides");
+  const { isPreviewDeployment, jsonLd, siteUrl } = await import("./site");
 
   it("has unique slugs that match their names", () => {
     const slugs = CITIES.map((c) => c.slug);
     expect(new Set(slugs).size).toBe(slugs.length);
     for (const city of CITIES) expect(city.slug).toMatch(/^[a-z]+(-[a-z]+)*$/);
-    expect(cityBySlug("london")?.country).toBe("GB");
+    expect(cityBySlug("lahore")?.region).toBe("Punjab");
     expect(cityBySlug("atlantis")).toBeUndefined();
   });
 
+  it("covers 50 places, all in Pakistan, each with its own written note", () => {
+    expect(CITIES).toHaveLength(50);
+    for (const city of CITIES) {
+      expect(city.lat, city.slug).toBeGreaterThan(23);
+      expect(city.lat, city.slug).toBeLessThan(38);
+      expect(city.lon, city.slug).toBeGreaterThan(60);
+      expect(city.lon, city.slug).toBeLessThan(78);
+      expect(city.nameUr, city.slug).toMatch(/\p{Script=Arabic}/u);
+      expect(CITY_GUIDES[city.slug]?.length, city.slug).toBeGreaterThan(80);
+    }
+    expect(new Set(Object.values(CITY_GUIDES)).size).toBe(CITIES.length);
+    expect(Object.keys(CITY_GUIDES)).toHaveLength(CITIES.length);
+    for (const province of PROVINCES) {
+      expect(PROVINCE_GUIDES[province.slug]).toBeTruthy();
+      expect(citiesIn(province.slug).length).toBeGreaterThan(0);
+    }
+  });
+
+  it("finds cities by name, Urdu name and alias", () => {
+    expect(findCity("Lahore")?.slug).toBe("lahore");
+    expect(findCity("  lahore, pakistan ")?.slug).toBe("lahore");
+    expect(findCity("Lahore, PK")?.slug).toBe("lahore");
+    expect(findCity("لاہور")?.slug).toBe("lahore");
+    expect(findCity("Pindi")?.slug).toBe("rawalpindi");
+    expect(findCity("D.I. Khan")?.slug).toBe("dera-ismail-khan");
+    expect(findCity("Mingora")?.slug).toBe("swat");
+    expect(findCity("London")).toBeUndefined();
+  });
+
+  it("suggests Pakistani cities first, so Hyderabad means Sindh", () => {
+    expect(suggestCities("Hyd").map((c) => c.slug)).toEqual(["hyderabad"]);
+    expect(suggestCities("mir").map((c) => c.slug)).toEqual(["mirpur-khas", "mirpur"]);
+    expect(suggestCities("Lon")).toEqual([]);
+    expect(suggestCities("L")).toEqual([]);
+  });
+
+  it("lists nearby cities closest first", () => {
+    const near = nearbyCities(cityBySlug("islamabad")!, 2);
+    expect(near[0].slug).toBe("rawalpindi");
+    expect(near).toHaveLength(2);
+    expect(near.map((c) => c.slug)).not.toContain("islamabad");
+  });
+
   it("sends searches for listed cities to their own page", () => {
-    expect(cityNear(51.5073, -0.1276)?.slug).toBe("london");
-    expect(cityNear(42.98, -81.23)).toBeUndefined(); // London, Ontario
-    expect(placeHref({ lat: 51.507, lon: -0.128 }, "metric")).toBe("/weather/london");
-    expect(placeHref({ lat: 51.507, lon: -0.128 }, "imperial")).toBe("/weather/london?units=imperial");
+    expect(cityNear(31.5656, 74.3142)?.slug).toBe("lahore");
+    expect(cityNear(33.6, 73.05)?.slug).toBe("rawalpindi"); // The closest, not the first within range.
+    expect(cityNear(51.5073, -0.1276)).toBeUndefined(); // London
+    expect(placeHref({ lat: 31.566, lon: 74.314 }, "metric")).toBe("/weather/lahore");
+    expect(placeHref({ lat: 31.566, lon: 74.314 }, "imperial")).toBe("/weather/lahore?units=imperial");
+    expect(placeHref({ lat: 51.507, lon: -0.128 }, "metric")).toBe("/?lat=51.507&lon=-0.128");
+  });
+
+  it("spells out Pakistan and keeps other country codes", () => {
+    expect(placeRegion({ region: "Punjab", country: "PK" })).toBe("Punjab, Pakistan");
+    expect(placeRegion({ region: "Ontario", country: "CA" })).toBe("Ontario, CA");
   });
 
   it("escapes </script> inside structured data", () => {
@@ -198,16 +249,147 @@ describe("cities and site", async () => {
     expect(JSON.parse(jsonLd({ name: "</script>" })).name).toBe("</script>");
   });
 
-  it("picks the public URL from SITE_URL, then Vercel, then localhost", () => {
+  it("uses the real domain, never the one Vercel guesses", () => {
     const saved = { ...process.env };
     process.env.SITE_URL = "";
-    process.env.VERCEL_PROJECT_PRODUCTION_URL = "skycast.vercel.app";
-    expect(siteUrl().toString()).toBe("https://skycast.vercel.app/");
+    process.env.VERCEL_PROJECT_PRODUCTION_URL = "skycast-mu-six.vercel.app";
+    expect(siteUrl().toString()).toBe("https://getskycast.vercel.app/");
     process.env.SITE_URL = "https://weather.example.com";
     expect(siteUrl().toString()).toBe("https://weather.example.com/");
-    process.env.SITE_URL = "";
-    process.env.VERCEL_PROJECT_PRODUCTION_URL = "";
-    expect(siteUrl().toString()).toBe("http://localhost:3000/");
     process.env = saved;
+  });
+
+  it("keeps preview deployments out of search", () => {
+    const saved = { ...process.env };
+    process.env.VERCEL_ENV = "preview";
+    expect(isPreviewDeployment()).toBe(true);
+    process.env.VERCEL_ENV = "production";
+    expect(isPreviewDeployment()).toBe(false);
+    process.env = saved;
+  });
+});
+
+describe("air quality", async () => {
+  const { aqiBand, usAqi } = await import("./format");
+
+  it.each([
+    [0, 0],
+    [9, 50],
+    [9.1, 51],
+    [35.4, 100],
+    [35.5, 101],
+    [55.4, 150],
+    [55.5, 151],
+    [125.4, 200],
+    [125.5, 201],
+    [225.4, 300],
+    [225.5, 301],
+    [325.4, 500],
+    [900, 500],
+  ])("turns PM2.5 %d into US AQI %d", (pm25, aqi) => {
+    expect(usAqi(pm25)).toBe(aqi);
+  });
+
+  it("never leaves a gap between breakpoints", () => {
+    // 9.05 sits between the 9.0 and 9.1 breakpoints, and truncates to 9.0.
+    expect(usAqi(9.05)).toBe(50);
+    expect(usAqi(35.49)).toBe(100);
+  });
+
+  it("names each band", () => {
+    expect(aqiBand(50).label).toBe("Good");
+    expect(aqiBand(51).label).toBe("Moderate");
+    expect(aqiBand(150).label).toBe("Unhealthy for sensitive groups");
+    expect(aqiBand(200).label).toBe("Unhealthy");
+    expect(aqiBand(300).label).toBe("Very unhealthy");
+    expect(aqiBand(500).label).toBe("Hazardous");
+  });
+});
+
+describe("climate", async () => {
+  const { CITIES } = await import("./cities");
+  const { climateOf, describeMonths, hasRainData, summarise } = await import("./climate");
+
+  it("has twelve sensible months for every city", () => {
+    for (const city of CITIES) {
+      const climate = climateOf(city.slug);
+      expect(climate?.months, city.slug).toHaveLength(12);
+      for (const month of climate!.months) {
+        expect(month.high, city.slug).toBeGreaterThan(month.low);
+        expect(month.rain, city.slug).toBeGreaterThanOrEqual(0);
+      }
+    }
+  });
+
+  it("gets the well-known patterns right", () => {
+    const lahore = summarise(climateOf("lahore")!);
+    expect([4, 5]).toContain(lahore.hottest); // May or June
+    expect([11, 0]).toContain(lahore.coldest); // December or January
+    expect([6, 7]).toContain(lahore.wettest); // The monsoon
+    // Quetta's rain comes mostly in winter, unlike the monsoon cities.
+    const quetta = climateOf("quetta")!.months;
+    expect(quetta[1].rain).toBeGreaterThan(quetta[6].rain);
+  });
+
+  it("hides rainfall where the model is known to overstate it", () => {
+    expect(hasRainData("gilgit")).toBe(false);
+    expect(hasRainData("lahore")).toBe(true);
+  });
+
+  it("describes months in plain words", () => {
+    expect(describeMonths([2])).toBe("March");
+    expect(describeMonths([2, 3])).toBe("March and April");
+    expect(describeMonths([9, 10, 11, 0, 1])).toBe("October to February");
+    expect(describeMonths([2, 3, 9, 10])).toBe("March, April, October and November");
+    expect(describeMonths([1, 3, 5])).toBe("February, April and June");
+    expect(describeMonths([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11])).toBe("all year");
+    expect(describeMonths([])).toBe("");
+  });
+});
+
+describe("questions", async () => {
+  const { cityBySlug } = await import("./cities");
+  const { climateOf } = await import("./climate");
+  const { cityFaqs, nationFaqs } = await import("./faq");
+  const lahore = cityBySlug("lahore")!;
+  const gilgit = cityBySlug("gilgit")!;
+  const snapshot = buildSnapshot(lahore, current, forecast, air);
+
+  it("answers from the data on the page", () => {
+    const faqs = cityFaqs(lahore, snapshot, climateOf("lahore"), "metric");
+    expect(faqs[0].answer).toContain("24°C");
+    expect(faqs.map((f) => f.question)).toContain("What is the AQI in Lahore today?");
+    expect(faqs.map((f) => f.question)).toContain("Which month gets the most rain in Lahore?");
+  });
+
+  it("uses the reader's units", () => {
+    expect(cityFaqs(lahore, snapshot, undefined, "imperial")[0].answer).toContain("°F");
+  });
+
+  it("never quotes rainfall the model overstates", () => {
+    const faqs = cityFaqs(gilgit, { ...snapshot, place: gilgit }, climateOf("gilgit"), "metric");
+    expect(JSON.stringify(faqs)).not.toMatch(/wettest| mm/);
+  });
+
+  it("says so when no rain is expected", () => {
+    const dry = { ...snapshot, daily: snapshot.daily.map((day) => ({ ...day, pop: 0 })) };
+    expect(cityFaqs(lahore, dry, undefined, "metric")[1].answer).toMatch(/^No rain is expected/);
+  });
+
+  it("names the extremes for the whole country", () => {
+    const entry = (slug: string, temp: number, condition: "clear" | "rain") => ({
+      city: cityBySlug(slug)!,
+      temp,
+      condition,
+      isDay: true,
+      observedAt: 0,
+    });
+    const nation = [entry("jacobabad", 44, "clear"), entry("skardu", 3, "rain"), entry("lahore", 30, "clear")];
+    const faqs = nationFaqs(nation, [{ city: lahore, aqi: 180, pm25: 100 }], "metric");
+    expect(faqs[0].answer).toContain("Jacobabad");
+    expect(faqs[1].answer).toContain("Skardu");
+    expect(faqs[2].answer).toContain("Skardu");
+    expect(faqs[3].answer).toContain("Lahore");
+    expect(nationFaqs([], [], "metric")).toEqual([]);
   });
 });

@@ -2,10 +2,11 @@ import "server-only";
 
 import { cache } from "react";
 
-import { CITIES, FEATURED } from "./cities";
-import { MissingApiKeyError, UpstreamError, getBrief, getSnapshot, placeAt, searchPlaces } from "./openweather";
-import { DEFAULT_PLACE, parseLocation } from "./query";
-import type { Place, Snapshot } from "./types";
+import { CITIES, type City } from "./cities";
+import { usAqi } from "./format";
+import { MissingApiKeyError, UpstreamError, getAir, getBrief, getSnapshot, placeAt, searchPlaces } from "./openweather";
+import { parseLocation } from "./query";
+import type { Condition, Place, Sky, Snapshot } from "./types";
 
 export type Outcome =
   | { kind: "ok"; snapshot: Snapshot }
@@ -32,7 +33,7 @@ export const loadFromQuery = cache((lat: string, lon: string, q: string) =>
       const [match] = await searchPlaces(location.q, 1);
       if (!match) return { kind: "not-found", query: location.q };
       place = match;
-    } else place = DEFAULT_PLACE;
+    } else return { kind: "not-found", query: "" };
     return { kind: "ok", snapshot: await getSnapshot(place) };
   }),
 );
@@ -40,24 +41,47 @@ export const loadFromQuery = cache((lat: string, lon: string, q: string) =>
 /** Weather for a city page. */
 export const loadPlace = cache((place: Place) => guard(async () => ({ kind: "ok", snapshot: await getSnapshot(place) })));
 
-export interface WorldEntry {
-  slug: string;
-  name: string;
-  country: string;
+export interface CityNow {
+  city: City;
   temp: number;
-  condition: Snapshot["current"]["condition"];
+  condition: Condition;
   isDay: boolean;
+  observedAt: number;
 }
 
-/** Current temperature in the featured cities. Cities that fail to load are left out. */
-export const loadWorld = cache(async (exclude?: string): Promise<WorldEntry[]> => {
-  const cities = FEATURED.filter((slug) => slug !== exclude)
-    .slice(0, 6)
-    .map((slug) => CITIES.find((c) => c.slug === slug)!);
+/** Current weather in some cities. A city that fails to load is left out, and the page still works. */
+export async function loadNow(cities: City[]): Promise<CityNow[]> {
   const results = await Promise.allSettled(cities.map((city) => getBrief(city)));
-  return results.flatMap((result, i) =>
-    result.status === "fulfilled"
-      ? [{ slug: cities[i].slug, name: cities[i].name, country: cities[i].country, ...result.value }]
-      : [],
-  );
+  return results.flatMap((result, i) => (result.status === "fulfilled" ? [{ city: cities[i], ...result.value }] : []));
+}
+
+/** Current weather in every city. */
+export const loadNation = cache(() => loadNow(CITIES));
+
+export interface CityAir {
+  city: City;
+  aqi: number;
+  pm25: number;
+}
+
+/** Estimated air quality in every city, worst first. */
+export const loadNationAir = cache(async (): Promise<CityAir[]> => {
+  const results = await Promise.allSettled(CITIES.map((city) => getAir(city)));
+  return results
+    .flatMap((result, i) =>
+      result.status === "fulfilled" && result.value
+        ? [{ city: CITIES[i], aqi: usAqi(result.value.pm25), pm25: result.value.pm25 }]
+        : [],
+    )
+    .sort((a, b) => b.pm25 - a.pm25);
 });
+
+/** Pages about the whole country take their sky from the capital. */
+export function nationSky(nation: CityNow[]): Sky {
+  const capital = nation.find((entry) => entry.city.slug === "islamabad");
+  if (!capital) return "clear";
+  if (capital.condition === "thunder") return "storm";
+  if (capital.condition === "rain" || capital.condition === "drizzle") return "rain";
+  if (capital.condition === "snow") return "snow";
+  return capital.isDay ? capital.condition : "night";
+}

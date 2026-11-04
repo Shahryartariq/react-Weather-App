@@ -1,11 +1,14 @@
+import Link from "next/link";
+
 import {
-  airLabel,
+  aqiBand,
   compass,
   dewPoint,
   formatPressure,
   formatTemp,
   formatVisibility,
   formatWind,
+  usAqi,
 } from "@/lib/format";
 import { formatClock } from "@/lib/time";
 import type { Snapshot, Units } from "@/lib/types";
@@ -59,6 +62,8 @@ export function Details({ snapshot, units }: { snapshot: Snapshot; units: Units 
   const { current, air, timezoneOffset: offset, observedAt } = snapshot;
   const dew = dewPoint(current.temp, current.humidity);
   const daylightMinutes = Math.round((current.sunset - current.sunrise) / 60);
+  const aqi = air && usAqi(air.pm25);
+  const band = aqi === undefined ? undefined : aqiBand(aqi);
 
   return (
     <section className="panel details" aria-labelledby="details-title">
@@ -87,14 +92,15 @@ export function Details({ snapshot, units }: { snapshot: Snapshot; units: Units 
         </div>
         <div>
           <dt>Air quality</dt>
-          {air ? (
+          {air && band ? (
             <>
               <dd className="detail-value">
-                <span className={`aqi aqi-${air.index}`} aria-hidden="true" />
-                {airLabel(air.index)}
+                <span className={`aqi aqi-${band.level}`} aria-hidden="true" />
+                AQI {aqi}
               </dd>
               <dd className="detail-note">
-                PM2.5 {Math.round(air.pm25)} µg/m³ · index {air.index} of 5.
+                {band.label}. PM2.5 {Math.round(air.pm25)} µg/m³, estimated.{" "}
+                <Link href="/air-quality">Compare cities</Link>
               </dd>
             </>
           ) : (

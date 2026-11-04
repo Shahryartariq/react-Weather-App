@@ -1,14 +1,6 @@
 import { cityNear, cityPath } from "./cities";
 import type { Place, Units } from "./types";
 
-export const DEFAULT_PLACE: Place = {
-  name: "Islamabad",
-  region: "Islamabad Capital Territory",
-  country: "PK",
-  lat: 33.694,
-  lon: 73.065,
-};
-
 type Params = Record<string, string | string[] | undefined>;
 
 const first = (value: string | string[] | undefined) => (Array.isArray(value) ? value[0] : value);
@@ -43,7 +35,7 @@ export function parseLocation(params: Params): LocationQuery {
 
 /**
  * Builds a page URL for a place, keeping the reader's units. Places that have their own
- * page (/weather/london) link there, so search results land on clean, shareable URLs.
+ * page (/weather/lahore) link there, so search results land on clean, shareable URLs.
  */
 export function placeHref(place: Pick<Place, "lat" | "lon">, units: Units): string {
   const suffix = units === "imperial" ? "?units=imperial" : "";
@@ -57,4 +49,9 @@ export function placeHref(place: Pick<Place, "lat" | "lon">, units: Units): stri
 /** "Lahore, Punjab, PK" without empty parts. */
 export function placeLabel(place: Place): string {
   return [place.name, place.region, place.country].filter(Boolean).join(", ");
+}
+
+/** "Punjab, Pakistan" for the page; other countries keep their code ("Ontario, CA"). */
+export function placeRegion(place: Pick<Place, "region" | "country">): string {
+  return [place.region, place.country === "PK" ? "Pakistan" : place.country].filter(Boolean).join(", ");
 }

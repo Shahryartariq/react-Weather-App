@@ -1,22 +1,24 @@
 export const SITE_NAME = "Skycast";
 
 export const SITE_DESCRIPTION =
-  "Live weather for any city: current conditions, the next 24 hours and a 5-day forecast, with wind, humidity, air quality and sunrise times. Free, fast and ad-free.";
+  "Live Pakistan weather for 50 cities: temperature, rain, air quality and 5-day forecasts for Karachi, Lahore, Islamabad and the northern areas. Free and ad-free.";
 
 export const AUTHOR = { name: "Muhammad Shehryar", url: "https://github.com/Shahryartariq" };
 export const SOURCE_URL = "https://github.com/Shahryartariq/skycast";
 
+const PRODUCTION_URL = "https://getskycast.vercel.app";
+
 /**
  * The public address of the site, for canonical links, the sitemap and social cards.
- * SITE_URL wins; on Vercel the production domain is provided automatically.
+ * It's set here on purpose. VERCEL_PROJECT_PRODUCTION_URL once pointed every canonical link at
+ * an auto-generated alias that returned 404. Set SITE_URL when moving to a custom domain.
  */
 export function siteUrl(): URL {
-  const explicit = process.env.SITE_URL?.trim();
-  if (explicit) return new URL(explicit);
-  const vercel = process.env.VERCEL_PROJECT_PRODUCTION_URL?.trim();
-  if (vercel) return new URL(`https://${vercel}`);
-  return new URL("http://localhost:3000");
+  return new URL(process.env.SITE_URL?.trim() || PRODUCTION_URL);
 }
+
+/** Preview deployments have their own URLs and must stay out of search results. */
+export const isPreviewDeployment = () => process.env.VERCEL_ENV === "preview";
 
 /** JSON for a <script type="application/ld+json">, safe against "</script>" in the data. */
 export function jsonLd(data: unknown): string {
