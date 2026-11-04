@@ -198,15 +198,15 @@ describe("cities and site", async () => {
     expect(JSON.parse(jsonLd({ name: "</script>" })).name).toBe("</script>");
   });
 
-  it("picks the public URL from SITE_URL, then Vercel, then localhost", () => {
+  it("picks the public URL from SITE_URL, then the production address on Vercel, then localhost", () => {
     const saved = { ...process.env };
     process.env.SITE_URL = "";
-    process.env.VERCEL_PROJECT_PRODUCTION_URL = "skycast.vercel.app";
-    expect(siteUrl().toString()).toBe("https://skycast.vercel.app/");
+    process.env.VERCEL = "1";
+    expect(siteUrl().toString()).toBe("https://getskycast.vercel.app/");
     process.env.SITE_URL = "https://weather.example.com";
     expect(siteUrl().toString()).toBe("https://weather.example.com/");
     process.env.SITE_URL = "";
-    process.env.VERCEL_PROJECT_PRODUCTION_URL = "";
+    process.env.VERCEL = "";
     expect(siteUrl().toString()).toBe("http://localhost:3000/");
     process.env = saved;
   });
