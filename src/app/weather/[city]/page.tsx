@@ -1,64 +1,76 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
+import { CityGuide } from "@/components/CityGuide";
+import { Breadcrumbs } from "@/components/Shell";
 import { WeatherPage } from "@/components/WeatherPage";
-import { cityBySlug, cityPath } from "@/lib/cities";
+import { cityBySlug, cityPath, nearbyCities, type City } from "@/lib/cities";
+import { climateOf } from "@/lib/climate";
 import { conditionLabel } from "@/lib/conditions";
-import { formatTemp } from "@/lib/format";
-import { loadPlace, loadWorld } from "@/lib/load";
-import { parseUnits, placeLabel } from "@/lib/query";
-import { SITE_NAME, jsonLd, siteUrl } from "@/lib/site";
+import { cityFaqs } from "@/lib/faq";
+import { formatTempUnit } from "@/lib/format";
+import { loadNow, loadPlace, type Outcome } from "@/lib/load";
+import { parseUnits, placeRegion } from "@/lib/query";
+import { cityTrail, citySchema, pageMeta } from "@/lib/seo";
+import { SITE_NAME, jsonLd } from "@/lib/site";
+import type { Units } from "@/lib/types";
+
+function describe(city: City, outcome: Outcome, units: Units): string {
+  const now =
+    outcome.kind === "ok"
+      ? `${formatTempUnit(outcome.snapshot.current.temp, units)} and ${conditionLabel(
+          outcome.snapshot.current.condition,
+          outcome.snapshot.current.isDay,
+        ).toLowerCase()} in ${city.name} now. `
+      : "";
+  return `${now}Hourly and 5-day forecast, rain chance, AQI and monthly climate for ${city.name}, ${placeRegion(city)}. ${city.nameUr} کا موسم`;
+}
 
 export async function generateMetadata({ params, searchParams }: PageProps<"/weather/[city]">): Promise<Metadata> {
   const city = cityBySlug((await params).city);
   if (!city) return {};
   const units = parseUnits(await searchParams);
   const outcome = await loadPlace(city);
-  const where = placeLabel(city);
-  const now =
-    outcome.kind === "ok"
-      ? `Now ${formatTemp(outcome.snapshot.current.temp, units)} and ${conditionLabel(
-          outcome.snapshot.current.condition,
-          outcome.snapshot.current.isDay,
-        ).toLowerCase()}. `
-      : "";
-  return {
-    title: `${city.name} weather today`,
-    description: `${now}Hourly and 5-day forecast for ${where}, with wind, humidity, air quality, sunrise and sunset.`,
-    alternates: { canonical: cityPath(city) },
-    // The °F view is the same page; keep it out of the index.
-    robots: units === "imperial" ? { index: false, follow: true } : undefined,
-    openGraph: { title: `${city.name} weather · ${SITE_NAME}`, url: cityPath(city) },
-  };
+  return pageMeta({
+    title: `${city.name} Weather Today: Hourly & 5-Day Forecast · ${SITE_NAME}`,
+    description: describe(city, outcome, units),
+    path: cityPath(city),
+    // The °F view is the same page, and an error shouldn't replace a good page in the index.
+    noindex: units === "imperial" || outcome.kind !== "ok",
+  });
 }
 
 export default async function CityPage({ params, searchParams }: PageProps<"/weather/[city]">) {
   const city = cityBySlug((await params).city);
   if (!city) notFound();
   const units = parseUnits(await searchParams);
-  const [outcome, world] = await Promise.all([loadPlace(city), loadWorld(city.slug)]);
-
-  const base = siteUrl();
-  const breadcrumbs = {
-    "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
-    itemListElement: [
-      { "@type": "ListItem", position: 1, name: SITE_NAME, item: new URL("/", base).toString() },
-      { "@type": "ListItem", position: 2, name: `${city.name} weather`, item: new URL(cityPath(city), base).toString() },
-    ],
-  };
+  const nearby = nearbyCities(city);
+  const [outcome, now] = await Promise.all([loadPlace(city), loadNow(nearby)]);
 
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(breadcrumbs) }} />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: jsonLd(citySchema(city, describe(city, outcome, "metric"))) }}
+      />
       <WeatherPage
         outcome={outcome}
         units={units}
         basePath={cityPath(city)}
-        keep={new URLSearchParams()}
-        world={world}
-        currentSlug={city.slug}
-      />
+        nameUr={city.nameUr}
+        crumbs={<Breadcrumbs trail={cityTrail(city)} />}
+      >
+        {outcome.kind === "ok" && (
+          <CityGuide
+            city={city}
+            month={new Date((outcome.snapshot.observedAt + outcome.snapshot.timezoneOffset) * 1000).getUTCMonth()}
+            nearby={nearby}
+            now={now}
+            faqs={cityFaqs(city, outcome.snapshot, climateOf(city.slug), units)}
+            units={units}
+          />
+        )}
+      </WeatherPage>
     </>
   );
 }

@@ -14,7 +14,7 @@ export default function ErrorPage({ reset }: { error: Error & { digest?: string 
             <button type="button" className="button" onClick={reset}>
               Try again
             </button>
-            <Link href="/" className="button button-quiet">
+            <Link prefetch={false} href="/" className="button button-quiet">
               Go to the start page
             </Link>
           </p>
