@@ -146,7 +146,11 @@ function Footer({ units }: { units: Units }) {
           <a href="https://creativecommons.org/licenses/by/4.0/" rel="noopener">
             CC BY 4.0
           </a>
-          ). Covering {CITIES.length} places in Pakistan. In an emergency, follow the{" "}
+          ). Map outline from{" "}
+          <a href="https://www.naturalearthdata.com/" rel="noopener">
+            Natural Earth
+          </a>
+          . Covering {CITIES.length} places in Pakistan. In an emergency, follow the{" "}
           <a href="https://www.pmd.gov.pk/" rel="noopener">
             Pakistan Meteorological Department
           </a>{" "}

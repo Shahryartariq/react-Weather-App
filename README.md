@@ -87,7 +87,7 @@ scripts/build-climate.ts ──▶ Open-Meteo ──▶ src/lib/data/climate.jso
 
 **A canonical URL bug you can't see.** Vercel's `VERCEL_PROJECT_PRODUCTION_URL` resolved to an auto-generated alias that returned 404, so every canonical link and the sitemap told Google the real pages lived at a dead address. Everything looked fine in a browser. The domain is now set explicitly, and tests pin it.
 
-**A map with no map data.** The home page plots each city at its real coordinates, and Pakistan's shape comes from the dots. That needs no boundary files and adds no weight, and it takes no position on disputed borders.
+**A map without a map library.** A script turns Natural Earth's outline of Pakistan into one SVG path, about 6 KB, and checks all 50 cities against it. Each city is then a dot at its real coordinates, coloured by temperature, so the page loads no mapping code or tiles.
 
 **A strict CSP has a cost.** Nonces need every page to render per request, because a prerendered page can't carry one. Two new pages were silently prerendered, which would have blocked all their scripts in production, so there's now a test that checks the nonce on every page type. Weather pages are dynamic anyway, and the data behind them is cached, so the trade is cheap here.
 
@@ -159,6 +159,7 @@ WEATHER_SAMPLE_DATA=1 npm run dev
 | `npm test` | Unit and API route tests (Vitest) |
 | `npm run test:e2e` | End-to-end and accessibility tests with Playwright, against the production build and sample data |
 | `npm run climate` | Rebuild the climate data from Open-Meteo. Needs Node.js 22.18 or newer; run it about once a year. |
+| `npm run map` | Rebuild the map outline from Natural Earth. Needs Node.js 22.18 or newer. |
 
 Before running `npm run test:e2e` the first time, install the browser with `npx playwright install chromium`.
 
@@ -189,7 +190,7 @@ src/
     format.ts, time.ts       Units, US AQI, conversions and time zones
     query.ts, site.ts        URLs and the canonical address
   proxy.ts                   Content Security Policy with nonces; 404s and redirects
-scripts/                     Builds climate data; checks coordinates against a geocoder
+scripts/                     Builds climate data and the map outline; checks coordinates against a geocoder
 e2e/                         Playwright tests
 ```
 
@@ -199,7 +200,7 @@ This project started in 2021 as a small Create React App exercise. In 2026 it wa
 
 ## Credits
 
-Live weather from [OpenWeather](https://openweathermap.org/). Climate data from [Open-Meteo](https://open-meteo.com/) under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/), based on ERA5 from the Copernicus Climate Change Service. Built by [Muhammad Shehryar](https://github.com/Shahryartariq).
+Live weather from [OpenWeather](https://openweathermap.org/). Climate data from [Open-Meteo](https://open-meteo.com/) under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/), based on ERA5 from the Copernicus Climate Change Service. Map outline from [Natural Earth](https://www.naturalearthdata.com/) (public domain). Built by [Muhammad Shehryar](https://github.com/Shahryartariq).
 
 ## License
 

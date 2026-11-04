@@ -31,6 +31,7 @@ test.describe("weather", () => {
     await expect(page.getByText("Coldest now")).toBeVisible();
     await expect(page.getByText("Worst air now")).toBeVisible();
     await expect(page.getByRole("img", { name: /temperature right now in 50 cities/ })).toBeVisible();
+    await expect(page.locator(".pk-outline")).toHaveCount(1);
     await expect(page.locator(".pk-dot")).toHaveCount(50);
     // Every city is one click from the home page, so crawlers can reach them all.
     await expect(page.locator(".province-card li a")).toHaveCount(50);

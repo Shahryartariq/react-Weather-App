@@ -1182,15 +1182,27 @@ main:focus {
   overflow: visible;
 }
 
+.pk-outline {
+  fill: rgb(255 255 255 / 12%);
+  stroke: rgb(255 255 255 / 60%);
+  stroke-width: 1.25;
+  stroke-linejoin: round;
+}
+
 .pk-dot {
   stroke: rgb(255 255 255 / 85%);
   stroke-width: 1.5;
 }
 
+/* The halo keeps the border line from striking through labels that cross it. */
 .pk-label {
   fill: #fff;
   font-size: 15px;
   font-weight: 500;
+  stroke: var(--sky-top);
+  stroke-width: 4px;
+  stroke-linejoin: round;
+  paint-order: stroke;
 }
 
 .pk-temp {
