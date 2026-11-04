@@ -1,13 +1,8 @@
+import outline from "@/lib/data/pakistan-outline.json";
 import { formatTemp, tempColor } from "@/lib/format";
 import type { CityNow } from "@/lib/load";
+import { MAP_HEIGHT, MAP_WIDTH, mapX as x, mapY as y } from "@/lib/map";
 import type { Units } from "@/lib/types";
-
-const WIDTH = 520;
-const HEIGHT = 450;
-const WEST = 60.6;
-const EAST = 78.6; // Past the last city, to leave room for its label.
-const NORTH = 37.2;
-const SOUTH = 23.7;
 
 interface Label {
   side: "start" | "end";
@@ -34,23 +29,28 @@ const LABELS: Record<string, Label> = {
   karachi: { side: "end", drop: 18 },
 };
 
-const x = (lon: number) => ((lon - WEST) / (EAST - WEST)) * WIDTH;
-const y = (lat: number) => ((NORTH - lat) / (NORTH - SOUTH)) * HEIGHT;
-
 /**
- * Every city as a dot, coloured by its temperature, at its real position.
- * There's no outline on purpose: the country's shape comes from the data, so the page
- * needs no boundary files and takes no position on disputed borders.
+ * Pakistan, with every city as a dot at its real position, coloured by its temperature.
+ * Jammu and Kashmir is drawn as disputed territory, as on Pakistan's official map.
+ * The outlines are SVG paths built by scripts/build-map.ts, so there's no map library.
  */
 export function PakistanMap({ nation, units }: { nation: CityNow[]; units: Units }) {
   const labelled = nation.filter(({ city }) => LABELS[city.slug]);
   return (
     <svg
       className="pk-map"
-      viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
+      viewBox={`0 0 ${MAP_WIDTH} ${MAP_HEIGHT}`}
       role="img"
       aria-label={`Map of the temperature right now in ${nation.length} cities across Pakistan`}
     >
+      <path d={outline.disputed} className="pk-disputed" />
+      <path d={outline.path} className="pk-outline" />
+      <text x={x(75.05)} y={y(33.02)} className="pk-region">
+        Jammu &amp; Kashmir
+        <tspan x={x(75.05)} dy="14">
+          (disputed)
+        </tspan>
+      </text>
       {labelled.map(({ city }) => {
         const { leader } = LABELS[city.slug];
         if (!leader) return null;

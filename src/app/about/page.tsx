@@ -88,6 +88,11 @@ export default async function AboutPage() {
             averages can run several degrees cool there. Rainfall averages are left out for places in deep valleys or
             beside high ground, because the model overstates them.
           </p>
+          <p className="prose">
+            The map on the home page follows Pakistan&apos;s official political map, which shows Jammu and Kashmir as
+            disputed territory, with its final status to be decided under the relevant UN Security Council resolutions.
+            The outline is drawn from Natural Earth data and simplified to show where cities are.
+          </p>
         </section>
 
         <section className="section" aria-labelledby="who-title">
