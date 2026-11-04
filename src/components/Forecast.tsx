@@ -1,5 +1,5 @@
 import { conditionLabel } from "@/lib/conditions";
-import { formatPercent, formatTemp, temperature } from "@/lib/format";
+import { formatPercent, formatTemp, tempColor, temperature } from "@/lib/format";
 import { dayLabel, formatHour, localDay } from "@/lib/time";
 import type { DaySummary, HourSlot, Units } from "@/lib/types";
 
@@ -30,24 +30,6 @@ export function Hourly({ hours, offset, units }: { hours: HourSlot[]; offset: nu
   );
 }
 
-/* Temperature scale for the range bars, in °C. Each bar shows its slice of one shared scale. */
-const SCALE: [number, string][] = [
-  [-10, "#6E8FE8"],
-  [0, "#5FB3E6"],
-  [10, "#56C2A8"],
-  [18, "#E9C547"],
-  [26, "#EE9446"],
-  [34, "#E0573F"],
-];
-
-function colorAt(celsius: number): string {
-  if (celsius <= SCALE[0][0]) return SCALE[0][1];
-  for (let i = 1; i < SCALE.length; i++) {
-    if (celsius <= SCALE[i][0]) return SCALE[i][1];
-  }
-  return SCALE[SCALE.length - 1][1];
-}
-
 export function Daily({
   days,
   offset,
@@ -69,7 +51,7 @@ export function Daily({
 
   // Gradient stops placed on the shared scale, so a warm day is visibly warmer.
   const stops = [low, low + span * 0.25, low + span * 0.5, low + span * 0.75, high].map((t, i) => (
-    <stop key={i} offset={`${i * 25}%`} stopColor={colorAt(t)} />
+    <stop key={i} offset={`${i * 25}%`} stopColor={tempColor(t)} />
   ));
 
   return (

@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 
 import { measurementId } from "@/lib/analytics";
-import { cityBySlug } from "@/lib/cities";
+import { FORMER_CITIES, cityBySlug, cityPath, findCity, provinceBySlug } from "@/lib/cities";
 import { buildCsp } from "@/lib/csp";
 
 /**
@@ -10,10 +10,34 @@ import { buildCsp } from "@/lib/csp";
  * (they depend on the URL), so nonces cost nothing extra.
  */
 export function proxy(request: NextRequest) {
-  // Unknown city pages get a real 404 status before any HTML is streamed.
-  const city = /^\/weather\/([^/]+)\/?$/.exec(request.nextUrl.pathname);
-  if (city && !cityBySlug(decodeURIComponent(city[1]))) {
+  const { pathname, searchParams } = request.nextUrl;
+
+  // Unknown city and province pages get a real 404 status before any HTML is streamed.
+  const city = /^\/weather\/([^/]+)\/?$/.exec(pathname);
+  const province = /^\/pakistan\/([^/]+)\/?$/.exec(pathname);
+
+  // Here rather than in next.config: its redirects can't send a query with a space, like "New York".
+  const former = city && FORMER_CITIES[city[1]];
+  if (former) {
+    const target = new URL("/", request.url);
+    target.searchParams.set("q", former);
+    return NextResponse.redirect(target, 308);
+  }
+
+  if (
+    (city && !cityBySlug(decodeURIComponent(city[1]))) ||
+    (province && !provinceBySlug(decodeURIComponent(province[1])))
+  ) {
     return NextResponse.rewrite(new URL("/_unknown-city", request.url));
+  }
+
+  // A search for a city we cover goes to its page, so links stay clean and shareable.
+  const search = pathname === "/" ? searchParams.get("q") : null;
+  const match = search ? findCity(search) : undefined;
+  if (match) {
+    const target = new URL(cityPath(match), request.url);
+    if (searchParams.get("units") === "imperial") target.searchParams.set("units", "imperial");
+    return NextResponse.redirect(target);
   }
 
   const nonce = Buffer.from(crypto.randomUUID()).toString("base64");
