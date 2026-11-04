@@ -6,15 +6,17 @@ export const SITE_DESCRIPTION =
 export const AUTHOR = { name: "Muhammad Shehryar", url: "https://github.com/Shahryartariq" };
 export const SOURCE_URL = "https://github.com/Shahryartariq/skycast";
 
+/** The production address. Vercel's own project URL (skycast-mu-six.vercel.app) isn't the one we share. */
+export const PRODUCTION_URL = "https://getskycast.vercel.app";
+
 /**
  * The public address of the site, for canonical links, the sitemap and social cards.
- * SITE_URL wins; on Vercel the production domain is provided automatically.
+ * SITE_URL wins; any Vercel deployment (production or preview) points search engines at production.
  */
 export function siteUrl(): URL {
   const explicit = process.env.SITE_URL?.trim();
   if (explicit) return new URL(explicit);
-  const vercel = process.env.VERCEL_PROJECT_PRODUCTION_URL?.trim();
-  if (vercel) return new URL(`https://${vercel}`);
+  if (process.env.VERCEL) return new URL(PRODUCTION_URL);
   return new URL("http://localhost:3000");
 }
 

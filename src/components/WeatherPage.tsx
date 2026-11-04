@@ -4,6 +4,7 @@ import { CITIES, cityPath } from "@/lib/cities";
 import { skyFor } from "@/lib/conditions";
 import { formatTemp } from "@/lib/format";
 import type { Outcome, WorldEntry } from "@/lib/load";
+import { measurementId } from "@/lib/analytics";
 import { usingSampleData } from "@/lib/openweather";
 import { SOURCE_URL } from "@/lib/site";
 import type { Units } from "@/lib/types";
@@ -95,7 +96,7 @@ export function WeatherPage({
         <World entries={world} units={units} currentSlug={currentSlug} />
       </main>
 
-      <Footer sample={usingSampleData()} units={units} />
+      <Footer sample={usingSampleData()} analytics={measurementId() !== null} units={units} />
     </div>
   );
 }
@@ -162,7 +163,7 @@ function World({ entries, units, currentSlug }: { entries: WorldEntry[]; units: 
   );
 }
 
-function Footer({ sample, units }: { sample: boolean; units: Units }) {
+function Footer({ sample, analytics, units }: { sample: boolean; analytics: boolean; units: Units }) {
   return (
     <footer className="footer">
       <p>
@@ -172,6 +173,9 @@ function Footer({ sample, units }: { sample: boolean; units: Units }) {
         </a>
         , refreshed every 10 minutes. Showing {units === "imperial" ? "°F, mph and miles" : "°C, km/h and kilometres"}.
       </p>
+      {analytics && (
+        <p>Visits are counted with Google Analytics. Locations from “Use my location” are rounded to about 1 km.</p>
+      )}
       {sample && <p className="sample-badge">Sample data: set OPENWEATHER_API_KEY for live weather.</p>}
       <p>
         Built by{" "}
