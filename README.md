@@ -37,7 +37,8 @@ Measured on the home, city, province and air quality pages of a local production
 - **Questions answered from live data**, like "Will it rain in Lahore this week?"
 - **Search anywhere in the world**, with keyboard-friendly suggestions. Recent places are remembered on your device.
 - **Use my location**, °C or °F, and times in the place's own time zone.
-- **Works without JavaScript**: pages render on the server and search falls back to a normal form.
+- **Dark mode**: follows your device by default, or pick light or dark. The choice is remembered, with no flash on load, and open tabs stay in step.
+- **Works without JavaScript**: pages render on the server, search falls back to a normal form, and the theme follows your device.
 - **Installable** on a phone's home screen.
 
 <p align="center">
@@ -56,7 +57,7 @@ Measured on the home, city, province and air quality pages of a local production
 | Font | Bricolage Grotesque, self-hosted through `next/font` |
 | Live data | [OpenWeather](https://openweathermap.org/api) current weather, 5-day forecast, air pollution and geocoding APIs (free plan) |
 | Climate data | ERA5 reanalysis through [Open-Meteo](https://open-meteo.com/), built into a static file by a script |
-| Tests | Vitest (74 unit and API tests), Playwright (80 end-to-end runs on desktop and mobile), axe-core accessibility checks |
+| Tests | Vitest (75 unit and API tests), Playwright (130 end-to-end runs on desktop and mobile), axe-core accessibility checks in both themes |
 | CI | GitHub Actions: lint, type check, unit tests, build, end-to-end tests |
 | Hosting | Vercel |
 
@@ -90,6 +91,8 @@ scripts/build-climate.ts ──▶ Open-Meteo ──▶ src/lib/data/climate.jso
 **A map without a map library.** A script turns Natural Earth's boundaries into two SVG paths and checks all 50 cities against them. Each city is then a dot at its real coordinates, coloured by temperature, so the page loads no mapping code or tiles. Jammu and Kashmir is drawn as disputed territory, following Pakistan's official map.
 
 **A strict CSP has a cost.** Nonces need every page to render per request, because a prerendered page can't carry one. Two new pages were silently prerendered, which would have blocked all their scripts in production, so there's now a test that checks the nonce on every page type. Weather pages are dynamic anyway, and the data behind them is cached, so the trade is cheap here.
+
+**Dark mode without a flash or an inline script.** The usual approach keeps the choice in `localStorage` and runs an inline script before first paint, which a strict CSP has to make room for. Pages here already render per request, so the server reads a cookie and sends the right theme in the HTML. The first frame is correct, and the CSP didn't change. "System" stores nothing and leaves it to CSS, so that path needs no JavaScript at all.
 
 **Prefetching that cost more than it saved.** Next.js prefetches every link on screen. With over 100 links on a page and no static routes to warm, that meant 30 to 45 background requests per page view, each one a function call, and real clicks queued behind them. Flaky end-to-end tests exposed it: a measurement showed the cause, and turning prefetching off fixed both the tests and the waste.
 
@@ -175,7 +178,7 @@ src/
     api/places/route.ts      City search for the search box
     sitemap.ts, robots.ts, manifest.ts, opengraph-image.tsx, apple-icon.tsx, pwa-icon/
     layout.tsx, error.tsx, not-found.tsx, globals.css
-  components/                Page shell, national view, map, forecasts, climate, search, icons
+  components/                Page shell, national view, map, forecasts, climate, search, theme, icons
   lib/
     cities.ts                The 50 places: coordinates, Urdu names, aliases, search
     guides.ts                Hand-written notes on each place
@@ -183,6 +186,7 @@ src/
     faq.ts                   Questions answered from live data
     seo.ts                   Page metadata and structured data
     csp.ts, analytics.ts     Security policy; optional Google Analytics
+    theme.ts                 Theme names and the cookie that remembers the choice
     openweather.ts           Server-only API client (key, caching, retries, sample data)
     load.ts                  Loading and error handling shared by the pages
     forecast.ts              Raw API data → Snapshot

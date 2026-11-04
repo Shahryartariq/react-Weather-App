@@ -274,6 +274,19 @@ describe("cities and site", async () => {
   });
 });
 
+describe("theme", async () => {
+  const { parseTheme } = await import("./theme");
+
+  it("accepts only known themes and otherwise follows the system", () => {
+    expect(parseTheme("dark")).toBe("dark");
+    expect(parseTheme("light")).toBe("light");
+    expect(parseTheme("system")).toBe("system");
+    expect(parseTheme(undefined)).toBe("system");
+    expect(parseTheme("")).toBe("system");
+    expect(parseTheme("<script>")).toBe("system");
+  });
+});
+
 describe("air quality", async () => {
   const { aqiBand, usAqi } = await import("./format");
 

@@ -107,7 +107,8 @@ export default async function AboutPage() {
               source code
             </a>{" "}
             is open. {SITE_NAME} has no ads and no accounts. If you use your location, it&apos;s rounded to about 1 km
-            first.{measurementId() !== null && " Visits are counted with Google Analytics."}{" "}
+            first. If you pick a light or dark theme, a cookie remembers it.
+            {measurementId() !== null && " Visits are counted with Google Analytics."}{" "}
             <Link prefetch={false} href="/">See today&apos;s weather</Link>.
           </p>
         </section>

@@ -3,10 +3,12 @@ import "./globals.css";
 import { GoogleAnalytics } from "@next/third-parties/google";
 import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
-import { headers } from "next/headers";
+import { cookies, headers } from "next/headers";
 
+import { ThemeProvider } from "@/components/ThemeProvider";
 import { measurementId } from "@/lib/analytics";
 import { AUTHOR, SITE_DESCRIPTION, SITE_NAME, siteUrl } from "@/lib/site";
+import { THEME_COLORS, THEME_COOKIE, parseTheme } from "@/lib/theme";
 
 /**
  * Through next/font rather than a plain CSS import: it preloads the file and sizes the fallback
@@ -41,21 +43,31 @@ export const metadata: Metadata = {
   verification: process.env.GOOGLE_SITE_VERIFICATION ? { google: process.env.GOOGLE_SITE_VERIFICATION } : undefined,
 };
 
-export const viewport: Viewport = {
-  colorScheme: "light dark",
-  themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#164E8C" },
-    { media: "(prefers-color-scheme: dark)", color: "#0B1530" },
-  ],
-};
+const readTheme = async () => parseTheme((await cookies()).get(THEME_COOKIE)?.value);
+
+export async function generateViewport(): Promise<Viewport> {
+  const theme = await readTheme();
+  if (theme !== "system") return { colorScheme: theme, themeColor: THEME_COLORS[theme] };
+  return {
+    colorScheme: "light dark",
+    themeColor: [
+      { media: "(prefers-color-scheme: light)", color: THEME_COLORS.light },
+      { media: "(prefers-color-scheme: dark)", color: THEME_COLORS.dark },
+    ],
+  };
+}
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {
   const gaId = measurementId();
   // The proxy puts this request's CSP nonce in x-nonce; the analytics scripts need it to run.
   const nonce = gaId ? ((await headers()).get("x-nonce") ?? undefined) : undefined;
+  // Read on the server so the first paint is already right. "System" leaves it to CSS.
+  const theme = await readTheme();
   return (
-    <html lang="en-PK" className={bricolage.variable}>
-      <body>{children}</body>
+    <html lang="en-PK" className={bricolage.variable} data-theme={theme === "system" ? undefined : theme}>
+      <body>
+        <ThemeProvider initial={theme}>{children}</ThemeProvider>
+      </body>
       {gaId && <GoogleAnalytics gaId={gaId} nonce={nonce} />}
     </html>
   );

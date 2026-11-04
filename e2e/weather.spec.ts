@@ -188,6 +188,133 @@ test.describe("weather", () => {
   });
 });
 
+test.describe("theme", () => {
+  const background = (page: Page) => page.evaluate(() => getComputedStyle(document.body).backgroundColor);
+  const LIGHT = "rgb(244, 246, 248)";
+  const DARK = "rgb(14, 18, 23)";
+  // The switch turns on once the page has hydrated, so wait for that before using it.
+  const hydrated = (page: Page) => expect(page.getByRole("radio", { name: "Dark" })).toBeEnabled();
+  const pick = async (page: Page, name: string) => {
+    await hydrated(page);
+    await page.locator("label", { hasText: name }).locator("svg").click();
+  };
+
+  test("follows the system by default, and changes with it", async ({ page }) => {
+    await page.emulateMedia({ colorScheme: "dark" });
+    await page.goto("/");
+    await expect(page.getByRole("radio", { name: "System" })).toBeChecked();
+    await expect(page.locator("html")).not.toHaveAttribute("data-theme");
+    expect(await background(page)).toBe(DARK);
+    await page.emulateMedia({ colorScheme: "light" });
+    expect(await background(page)).toBe(LIGHT);
+    expect((await page.context().cookies()).map((c) => c.name)).not.toContain("skycast-theme");
+  });
+
+  test("a choice beats the system, and survives navigation and reloads", async ({ page, context }) => {
+    await page.emulateMedia({ colorScheme: "light" });
+    await page.goto("/");
+    await pick(page, "Dark");
+    await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
+    expect(await background(page)).toBe(DARK);
+    await expect(page.locator('meta[name="theme-color"]').first()).toHaveAttribute("content", "#0B1530");
+
+    const cookie = (await context.cookies()).find((c) => c.name === "skycast-theme");
+    expect(cookie?.value).toBe("dark");
+    expect(cookie?.sameSite).toBe("Lax");
+
+    await page.locator(".city-grid a").first().click();
+    await expect(page).toHaveURL(/\/weather\//);
+    expect(await background(page)).toBe(DARK);
+    await expect(page.getByRole("radio", { name: "Dark" })).toBeChecked();
+
+    await page.reload();
+    expect(await background(page)).toBe(DARK);
+    await expect(page.getByRole("radio", { name: "Dark" })).toBeChecked();
+  });
+
+  test("light beats a dark system", async ({ page }) => {
+    await page.emulateMedia({ colorScheme: "dark" });
+    await page.goto("/");
+    await pick(page, "Light");
+    expect(await background(page)).toBe(LIGHT);
+    await page.reload();
+    expect(await background(page)).toBe(LIGHT);
+  });
+
+  test("going back to System forgets the choice", async ({ page, context }) => {
+    await page.emulateMedia({ colorScheme: "dark" });
+    await page.goto("/");
+    await pick(page, "Light");
+    await pick(page, "System");
+    await expect(page.locator("html")).not.toHaveAttribute("data-theme");
+    expect(await background(page)).toBe(DARK);
+    expect((await context.cookies()).map((c) => c.name)).not.toContain("skycast-theme");
+  });
+
+  test("the server sends the right theme, so there's no flash", async ({ request }) => {
+    const html = await (await request.get("/", { headers: { cookie: "skycast-theme=dark" } })).text();
+    expect(html).toMatch(/<html[^>]*data-theme="dark"/);
+    expect(html).toMatch(/<meta name="theme-color" content="#0B1530"/);
+    expect(html).toMatch(/<meta name="color-scheme" content="dark"/);
+    const plain = await (await request.get("/")).text();
+    expect(plain).not.toMatch(/<html[^>]*data-theme=/);
+    expect(plain).toContain('media="(prefers-color-scheme: dark)"');
+  });
+
+  test("ignores a tampered cookie", async ({ request }) => {
+    const html = await (await request.get("/", { headers: { cookie: "skycast-theme=%22%3E%3Cscript%3E" } })).text();
+    expect(html).not.toMatch(/<html[^>]*data-theme=/);
+  });
+
+  test("keeps other tabs in step", async ({ page, context }) => {
+    await page.goto("/");
+    const other = await context.newPage();
+    await other.goto("/air-quality");
+    await hydrated(other);
+    await pick(page, "Dark");
+    await expect(other.locator("html")).toHaveAttribute("data-theme", "dark");
+    await other.close();
+  });
+
+  test("works from the keyboard", async ({ page, isMobile }) => {
+    test.skip(isMobile, "Keyboard navigation is a desktop concern");
+    await page.goto("/");
+    await hydrated(page);
+    await page.getByRole("radio", { name: "System" }).focus();
+    await page.keyboard.press("ArrowDown");
+    await expect(page.getByRole("radio", { name: "Light" })).toBeChecked();
+    await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
+  });
+
+  test("is switched off without JavaScript, and still follows the system", async ({ browser }) => {
+    const context = await browser.newContext({ javaScriptEnabled: false, colorScheme: "dark" });
+    const page = await context.newPage();
+    await page.goto("/");
+    await expect(page.getByRole("radio", { name: "Dark" })).toBeDisabled();
+    await context.close();
+  });
+
+  test("fits a small phone without scrolling sideways", async ({ page }) => {
+    await page.setViewportSize({ width: 320, height: 720 });
+    await page.goto("/");
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(320);
+    const brand = await page.locator(".brand").boundingBox();
+    const toggle = await page.locator(".theme-switch").boundingBox();
+    expect(toggle!.x).toBeGreaterThanOrEqual(brand!.x + brand!.width);
+    expect(toggle!.y).toBeLessThan(brand!.y + brand!.height);
+  });
+
+  for (const scheme of ["light", "dark"] as const) {
+    for (const path of ["/", "/weather/lahore", "/weather/gilgit", "/pakistan/punjab", "/air-quality", "/about", "/weather/nowhere"]) {
+      test(`no serious WCAG 2.1 AA issues in ${scheme} on ${path}`, async ({ page }) => {
+        await page.emulateMedia({ colorScheme: scheme });
+        await page.goto(path);
+        await expectAccessible(page);
+      });
+    }
+  }
+});
+
 test.describe("accessibility", () => {
   for (const path of ["/", "/weather/lahore", "/weather/gilgit", "/pakistan/punjab", "/air-quality", "/about", "/?q=Tokyo", "/?q=Atlantis", "/weather/nowhere"]) {
     test(`no serious WCAG 2.1 AA issues on ${path}`, async ({ page }) => {
