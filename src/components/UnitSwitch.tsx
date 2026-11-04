@@ -22,10 +22,10 @@ export function UnitSwitch({
 
   return (
     <nav className="units" aria-label="Temperature unit">
-      <Link href={hrefFor("metric")} aria-current={units === "metric" ? "true" : undefined} scroll={false} rel="nofollow">
+      <Link prefetch={false} href={hrefFor("metric")} aria-current={units === "metric" ? "true" : undefined} scroll={false} rel="nofollow">
         °C
       </Link>
-      <Link href={hrefFor("imperial")} aria-current={units === "imperial" ? "true" : undefined} scroll={false} rel="nofollow">
+      <Link prefetch={false} href={hrefFor("imperial")} aria-current={units === "imperial" ? "true" : undefined} scroll={false} rel="nofollow">
         °F
       </Link>
     </nav>

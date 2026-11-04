@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 
+import { measurementId } from "@/lib/analytics";
 import { CITIES, HILL_STATIONS, MAJOR, PROVINCES, cityBySlug, cityPath, provincePath } from "@/lib/cities";
 import { usingSampleData } from "@/lib/openweather";
 import { AUTHOR, SOURCE_URL } from "@/lib/site";
@@ -15,6 +16,9 @@ const SHORT_NAMES: Record<string, string> = { "khyber-pakhtunkhwa": "KP", "gilgi
 /**
  * What every page shares: skip link, header with search, region links, and a footer that links
  * to the main pages. Those links are how search engines reach all 50 cities.
+ *
+ * Links across the site turn prefetching off. Every page here renders per request, so prefetching
+ * gains almost nothing, and with this many links it sent 30 to 45 requests per page view.
  */
 export function Shell({
   sky,
@@ -38,7 +42,7 @@ export function Shell({
         Skip to the forecast
       </a>
       <header className="topbar">
-        <Link href={`/${suffix}`} className="brand" aria-label="Skycast Pakistan home">
+        <Link prefetch={false} href={`/${suffix}`} className="brand" aria-label="Skycast Pakistan home">
           <svg viewBox="0 0 32 32" aria-hidden="true">
             <circle cx="12" cy="13" r="6" className="brand-sun" />
             <path d="M9 24h14a5 5 0 0 0 .6-9.96A6.5 6.5 0 0 0 11.3 16.1 4 4 0 0 0 9 24Z" className="brand-cloud" />
@@ -55,11 +59,11 @@ export function Shell({
         <ul>
           {PROVINCES.map((province) => (
             <li key={province.slug}>
-              <Link href={`${provincePath(province)}${suffix}`}>{SHORT_NAMES[province.slug] ?? province.name}</Link>
+              <Link prefetch={false} href={`${provincePath(province)}${suffix}`}>{SHORT_NAMES[province.slug] ?? province.name}</Link>
             </li>
           ))}
           <li>
-            <Link href="/air-quality">Air quality</Link>
+            <Link prefetch={false} href="/air-quality">Air quality</Link>
           </li>
         </ul>
       </nav>
@@ -80,7 +84,7 @@ function CityLinks({ slugs, suffix }: { slugs: string[]; suffix: string }) {
         const city = cityBySlug(slug)!;
         return (
           <li key={slug}>
-            <Link href={`${cityPath(city)}${suffix}`}>{city.name} weather</Link>
+            <Link prefetch={false} href={`${cityPath(city)}${suffix}`}>{city.name} weather</Link>
           </li>
         );
       })}
@@ -106,7 +110,7 @@ function Footer({ units }: { units: Units }) {
           <ul>
             {PROVINCES.map((province) => (
               <li key={province.slug}>
-                <Link href={`${provincePath(province)}${suffix}`}>{province.name} weather</Link>
+                <Link prefetch={false} href={`${provincePath(province)}${suffix}`}>{province.name} weather</Link>
               </li>
             ))}
           </ul>
@@ -115,10 +119,10 @@ function Footer({ units }: { units: Units }) {
           <h2>Skycast</h2>
           <ul>
             <li>
-              <Link href="/air-quality">Pakistan air quality</Link>
+              <Link prefetch={false} href="/air-quality">Pakistan air quality</Link>
             </li>
             <li>
-              <Link href="/about">About and data sources</Link>
+              <Link prefetch={false} href="/about">About and data sources</Link>
             </li>
             <li>
               <a href={SOURCE_URL} rel="noopener">
@@ -152,6 +156,9 @@ function Footer({ units }: { units: Units }) {
           </a>
           .
         </p>
+        {measurementId() !== null && (
+          <p>Visits are counted with Google Analytics. Locations from “Use my location” are rounded to about 1 km.</p>
+        )}
         {usingSampleData() && <p className="sample-badge">Sample data: set OPENWEATHER_API_KEY for live weather.</p>}
         <p>
           Built by{" "}
@@ -172,7 +179,7 @@ export function Breadcrumbs({ trail }: { trail: { name: string; path: string }[]
       <ol>
         {trail.map(({ name, path }, i) => (
           <li key={path}>
-            {i === trail.length - 1 ? <span aria-current="page">{name}</span> : <Link href={path}>{name}</Link>}
+            {i === trail.length - 1 ? <span aria-current="page">{name}</span> : <Link prefetch={false} href={path}>{name}</Link>}
           </li>
         ))}
       </ol>

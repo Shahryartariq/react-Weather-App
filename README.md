@@ -14,7 +14,7 @@ A fast, free, ad-free weather site for Pakistan. It covers 50 cities, hill stati
 
 | Lighthouse | Performance | Accessibility | Best practices | SEO |
 |---|---|---|---|---|
-| Mobile | 97–98 | 100 | 100 | 100 |
+| Mobile | 96–98 | 100 | 100 | 100 |
 | Desktop | 100 | 100 | 100 | 100 |
 
 Measured on the home, city, province and air quality pages of a local production build, with no layout shift on any of them.
@@ -56,7 +56,7 @@ Measured on the home, city, province and air quality pages of a local production
 | Font | Bricolage Grotesque, self-hosted through `next/font` |
 | Live data | [OpenWeather](https://openweathermap.org/api) current weather, 5-day forecast, air pollution and geocoding APIs (free plan) |
 | Climate data | ERA5 reanalysis through [Open-Meteo](https://open-meteo.com/), built into a static file by a script |
-| Tests | Vitest (72 unit and API tests), Playwright (80 end-to-end runs on desktop and mobile), axe-core accessibility checks |
+| Tests | Vitest (74 unit and API tests), Playwright (80 end-to-end runs on desktop and mobile), axe-core accessibility checks |
 | CI | GitHub Actions: lint, type check, unit tests, build, end-to-end tests |
 | Hosting | Vercel |
 
@@ -91,7 +91,7 @@ scripts/build-climate.ts ──▶ Open-Meteo ──▶ src/lib/data/climate.jso
 
 **A strict CSP has a cost.** Nonces need every page to render per request, because a prerendered page can't carry one. Two new pages were silently prerendered, which would have blocked all their scripts in production, so there's now a test that checks the nonce on every page type. Weather pages are dynamic anyway, and the data behind them is cached, so the trade is cheap here.
 
-**No dependency for one script tag.** `@vercel/analytics` brought a peer conflict with the test tooling, so the site loads Vercel's script directly with the CSP nonce.
+**Prefetching that cost more than it saved.** Next.js prefetches every link on screen. With over 100 links on a page and no static routes to warm, that meant 30 to 45 background requests per page view, each one a function call, and real clicks queued behind them. Flaky end-to-end tests exposed it: a measurement showed the cause, and turning prefetching off fixed both the tests and the waste.
 
 **No FAQ schema, on purpose.** Google stopped showing FAQ rich results in May 2026, so the questions are plain visible content for readers rather than markup that does nothing.
 
@@ -107,7 +107,8 @@ scripts/build-climate.ts ──▶ Open-Meteo ──▶ src/lib/data/climate.jso
 
 ## Security and accessibility
 
-- A strict Content Security Policy with a fresh nonce on every request (`src/proxy.ts`), plus `X-Frame-Options`, `Referrer-Policy`, HSTS and a `Permissions-Policy` that allows only geolocation.
+- A strict Content Security Policy with a fresh nonce on every request (`src/proxy.ts`, `src/lib/csp.ts`), plus `X-Frame-Options`, `Referrer-Policy`, HSTS and a `Permissions-Policy` that allows only geolocation.
+- Google Analytics is opt-in through `GA_MEASUREMENT_ID` and loads under the same nonce-based policy. Locations from "Use my location" are rounded to about 1 km before they go into the URL.
 - Input to `/api/places` is validated, and errors never echo the upstream URL (which holds the key).
 - Landmarks, a skip link, a fully keyboard-operable search combobox, visible focus, text contrast of at least 4.5:1 on every sky colour, and support for reduced motion. End-to-end tests run axe-core on every page type and fail on any serious WCAG 2.1 AA issue.
 
@@ -142,9 +143,9 @@ WEATHER_SAMPLE_DATA=1 npm run dev
 | Name | Required | What it does |
 |---|---|---|
 | `OPENWEATHER_API_KEY` | Yes | Your OpenWeather key. Server-side only. |
-| `SITE_URL` | No | Public address for canonical links and the sitemap. Defaults to `https://getskycast.vercel.app`. |
+| `SITE_URL` | No | Public address for canonical links and the sitemap. Defaults to `https://getskycast.vercel.app` on Vercel and `http://localhost:3000` elsewhere. |
 | `GOOGLE_SITE_VERIFICATION` | No | The code from Google Search Console's HTML tag method. |
-| `ENABLE_WEB_ANALYTICS` | No | Set to `1` after switching on Web Analytics in the Vercel dashboard. |
+| `GA_MEASUREMENT_ID` | No | Google Analytics 4 measurement ID (`G-…`). When set, the Google tag loads with the page's CSP nonce and the policy allows Google's analytics hosts; when unset, nothing from Google loads. |
 | `WEATHER_SAMPLE_DATA` | No | Set to `1` to use the sample data in `src/lib/fixtures`. Ignored in Vercel production. |
 
 ## Scripts
@@ -180,6 +181,7 @@ src/
     climate.ts, data/        Monthly climate data and summaries
     faq.ts                   Questions answered from live data
     seo.ts                   Page metadata and structured data
+    csp.ts, analytics.ts     Security policy; optional Google Analytics
     openweather.ts           Server-only API client (key, caching, retries, sample data)
     load.ts                  Loading and error handling shared by the pages
     forecast.ts              Raw API data → Snapshot

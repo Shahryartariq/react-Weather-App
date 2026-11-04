@@ -100,7 +100,7 @@ export function Details({ snapshot, units }: { snapshot: Snapshot; units: Units 
               </dd>
               <dd className="detail-note">
                 {band.label}. PM2.5 {Math.round(air.pm25)} µg/m³, estimated.{" "}
-                <Link href="/air-quality">Compare cities</Link>
+                <Link prefetch={false} href="/air-quality">Compare cities</Link>
               </dd>
             </>
           ) : (

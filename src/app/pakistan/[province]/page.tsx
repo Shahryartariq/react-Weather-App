@@ -80,7 +80,7 @@ export default async function ProvincePage({ params, searchParams }: PageProps<"
           <ul className="facts">
             {PROVINCES.filter((other) => other.slug !== province.slug).map((other) => (
               <li key={other.slug}>
-                <Link href={`${provincePath(other)}${suffix}`}>{other.name} weather</Link>
+                <Link prefetch={false} href={`${provincePath(other)}${suffix}`}>{other.name} weather</Link>
               </li>
             ))}
           </ul>

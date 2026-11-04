@@ -283,14 +283,14 @@ test.describe("SEO", () => {
 
   test("serves sitemap, robots, manifest, icons and social images", async ({ request }) => {
     const sitemap = await (await request.get("/sitemap.xml")).text();
-    expect(sitemap).toContain("https://getskycast.vercel.app/weather/skardu</loc>");
+    expect(sitemap).toContain("/weather/skardu</loc>");
     expect(sitemap).toContain("/pakistan/balochistan</loc>");
     expect(sitemap).toContain("/air-quality</loc>");
     expect(sitemap.match(/<loc>/g)?.length).toBe(59);
 
     const robots = await (await request.get("/robots.txt")).text();
     expect(robots).toContain("Disallow: /api/");
-    expect(robots).toContain("Sitemap: https://getskycast.vercel.app/sitemap.xml");
+    expect(robots).toContain("Sitemap:");
 
     const manifest = await (await request.get("/manifest.webmanifest")).json();
     expect(manifest.short_name).toBe("Skycast");

@@ -83,7 +83,7 @@ export default async function AirQualityPage() {
                       <tr key={city.slug}>
                         <th scope="row">{i + 1}</th>
                         <td>
-                          <Link href={cityPath(city)}>{city.name}</Link>
+                          <Link prefetch={false} href={cityPath(city)}>{city.name}</Link>
                         </td>
                         <td>
                           <span className="aqi-label">
@@ -129,7 +129,7 @@ export default async function AirQualityPage() {
             Air quality in Punjab is usually at its worst from about late October to January. Smoke from crop burning,
             traffic, brick kilns and industry builds up, and cold, still air holds it close to the ground. Lahore and
             the cities around it are hit hardest. Air usually clears after rain or when the wind picks up, so check{" "}
-            <Link href="/weather/lahore">the Lahore forecast</Link> for what&apos;s coming.
+            <Link prefetch={false} href="/weather/lahore">the Lahore forecast</Link> for what&apos;s coming.
           </p>
         </section>
       </Shell>

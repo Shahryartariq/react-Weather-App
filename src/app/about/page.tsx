@@ -3,6 +3,7 @@ import Link from "next/link";
 import { connection } from "next/server";
 
 import { Breadcrumbs, Shell } from "@/components/Shell";
+import { measurementId } from "@/lib/analytics";
 import { CITIES } from "@/lib/cities";
 import { CLIMATE_PERIOD } from "@/lib/climate";
 import { pageMeta, simplePageSchema } from "@/lib/seo";
@@ -100,8 +101,9 @@ export default async function AboutPage() {
             <a href={SOURCE_URL} rel="noopener">
               source code
             </a>{" "}
-            is open. {SITE_NAME} has no ads and no accounts, and nothing about you leaves your device except the location
-            you choose to share. <Link href="/">See today&apos;s weather</Link>.
+            is open. {SITE_NAME} has no ads and no accounts. If you use your location, it&apos;s rounded to about 1 km
+            first.{measurementId() !== null && " Visits are counted with Google Analytics."}{" "}
+            <Link prefetch={false} href="/">See today&apos;s weather</Link>.
           </p>
         </section>
       </Shell>

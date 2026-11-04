@@ -153,7 +153,7 @@ export function CityGuide({
         <CityCards cities={nearby} now={now} units={units} />
         {province && (
           <p className="section-more">
-            <Link href={`${provincePath(province)}${suffix}`}>All {province.name} weather</Link>
+            <Link prefetch={false} href={`${provincePath(province)}${suffix}`}>All {province.name} weather</Link>
           </p>
         )}
       </section>

@@ -18,6 +18,6 @@ export default defineConfig({
     command: `npm run start -- -p ${PORT}`,
     url: `http://127.0.0.1:${PORT}`,
     reuseExistingServer: !process.env.CI,
-    env: { WEATHER_SAMPLE_DATA: "1" },
+    env: { WEATHER_SAMPLE_DATA: "1", SITE_URL: "https://getskycast.vercel.app" },
   },
 });

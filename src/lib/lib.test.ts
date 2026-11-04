@@ -249,13 +249,18 @@ describe("cities and site", async () => {
     expect(JSON.parse(jsonLd({ name: "</script>" })).name).toBe("</script>");
   });
 
-  it("uses the real domain, never the one Vercel guesses", () => {
+  it("picks the public URL from SITE_URL, then the production address on Vercel, then localhost", () => {
     const saved = { ...process.env };
     process.env.SITE_URL = "";
+    process.env.VERCEL = "1";
+    // The alias Vercel provides once returned 404, so it must never be used.
     process.env.VERCEL_PROJECT_PRODUCTION_URL = "skycast-mu-six.vercel.app";
     expect(siteUrl().toString()).toBe("https://getskycast.vercel.app/");
     process.env.SITE_URL = "https://weather.example.com";
     expect(siteUrl().toString()).toBe("https://weather.example.com/");
+    process.env.SITE_URL = "";
+    process.env.VERCEL = "";
+    expect(siteUrl().toString()).toBe("http://localhost:3000/");
     process.env = saved;
   });
 
@@ -391,5 +396,37 @@ describe("questions", async () => {
     expect(faqs[2].answer).toContain("Skardu");
     expect(faqs[3].answer).toContain("Lahore");
     expect(nationFaqs([], [], "metric")).toEqual([]);
+  });
+});
+
+describe("analytics and security policy", async () => {
+  const { measurementId } = await import("./analytics");
+  const { buildCsp } = await import("./csp");
+
+  it("accepts only well-formed GA4 measurement IDs", () => {
+    const saved = process.env.GA_MEASUREMENT_ID;
+    for (const [value, expected] of [
+      ["G-ABC123XYZ9", "G-ABC123XYZ9"],
+      [" g-abc123xyz9 ", "G-ABC123XYZ9"],
+      ["ABC123XYZ9", null],
+      ["UA-12345-1", null],
+      ["G-1;alert(1)", null],
+      ["", null],
+    ] as const) {
+      process.env.GA_MEASUREMENT_ID = value;
+      expect(measurementId(), value).toBe(expected);
+    }
+    process.env.GA_MEASUREMENT_ID = saved;
+  });
+
+  it("allows Google Analytics hosts only when analytics is on", () => {
+    const off = buildCsp({ nonce: "abc", dev: false, analytics: false });
+    const on = buildCsp({ nonce: "abc", dev: false, analytics: true });
+    expect(off).not.toContain("google");
+    expect(on).toContain("script-src 'self' 'nonce-abc' 'strict-dynamic' https://www.googletagmanager.com");
+    expect(on).toMatch(/connect-src 'self' https:\/\/\*\.google-analytics\.com/);
+    expect(on).toContain("frame-ancestors 'none'");
+    expect(on).not.toContain("unsafe-inline");
+    expect(buildCsp({ nonce: "abc", dev: true, analytics: false })).toContain("'unsafe-eval'");
   });
 });

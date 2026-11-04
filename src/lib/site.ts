@@ -6,15 +6,19 @@ export const SITE_DESCRIPTION =
 export const AUTHOR = { name: "Muhammad Shehryar", url: "https://github.com/Shahryartariq" };
 export const SOURCE_URL = "https://github.com/Shahryartariq/skycast";
 
-const PRODUCTION_URL = "https://getskycast.vercel.app";
+/** The production address. Vercel's own project URL (skycast-mu-six.vercel.app) isn't the one we share. */
+export const PRODUCTION_URL = "https://getskycast.vercel.app";
 
 /**
  * The public address of the site, for canonical links, the sitemap and social cards.
- * It's set here on purpose. VERCEL_PROJECT_PRODUCTION_URL once pointed every canonical link at
- * an auto-generated alias that returned 404. Set SITE_URL when moving to a custom domain.
+ * SITE_URL wins; any Vercel deployment (production or preview) points search engines at production.
+ * VERCEL_PROJECT_PRODUCTION_URL isn't used: it once sent every canonical link to an alias that returned 404.
  */
 export function siteUrl(): URL {
-  return new URL(process.env.SITE_URL?.trim() || PRODUCTION_URL);
+  const explicit = process.env.SITE_URL?.trim();
+  if (explicit) return new URL(explicit);
+  if (process.env.VERCEL) return new URL(PRODUCTION_URL);
+  return new URL("http://localhost:3000");
 }
 
 /** Preview deployments have their own URLs and must stay out of search results. */

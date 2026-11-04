@@ -1,9 +1,11 @@
 import "./globals.css";
 
+import { GoogleAnalytics } from "@next/third-parties/google";
 import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import { headers } from "next/headers";
 
+import { measurementId } from "@/lib/analytics";
 import { AUTHOR, SITE_DESCRIPTION, SITE_NAME, siteUrl } from "@/lib/site";
 
 /**
@@ -48,15 +50,13 @@ export const viewport: Viewport = {
 };
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {
-  // Off by default: the script 404s until Web Analytics is switched on in the Vercel dashboard.
-  const analytics = process.env.ENABLE_WEB_ANALYTICS === "1";
-  const nonce = analytics ? ((await headers()).get("x-nonce") ?? undefined) : undefined;
+  const gaId = measurementId();
+  // The proxy puts this request's CSP nonce in x-nonce; the analytics scripts need it to run.
+  const nonce = gaId ? ((await headers()).get("x-nonce") ?? undefined) : undefined;
   return (
     <html lang="en-PK" className={bricolage.variable}>
-      <body>
-        {children}
-        {analytics && <script defer src="/_vercel/insights/script.js" nonce={nonce} />}
-      </body>
+      <body>{children}</body>
+      {gaId && <GoogleAnalytics gaId={gaId} nonce={nonce} />}
     </html>
   );
 }

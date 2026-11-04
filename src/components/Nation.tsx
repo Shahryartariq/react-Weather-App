@@ -21,14 +21,14 @@ function ProvinceList({ title, href, cities, now, units }: { title: string; href
   return (
     <div className="panel province-card">
       <h3>
-        <Link href={`${href}${suffix}`}>{title}</Link>
+        <Link prefetch={false} href={`${href}${suffix}`}>{title}</Link>
       </h3>
       <ul>
         {cities.map((city) => {
           const entry = now.find((n) => n.city.slug === city.slug);
           return (
             <li key={city.slug}>
-              <Link href={`${cityPath(city)}${suffix}`}>
+              <Link prefetch={false} href={`${cityPath(city)}${suffix}`}>
                 <span>{city.name}</span>
                 {entry && <span>{formatTemp(entry.temp, units)}</span>}
               </Link>
@@ -89,14 +89,14 @@ export function Nation({
             {hottest && (
               <ul className="stats">
                 <li>
-                  <Link href={`${cityPath(hottest.city)}${suffix}`}>
+                  <Link prefetch={false} href={`${cityPath(hottest.city)}${suffix}`}>
                     <span className="stat-label">Hottest now</span>
                     <span className="stat-value">{formatTempUnit(hottest.temp, units)}</span>
                     <span className="stat-place">{hottest.city.name}</span>
                   </Link>
                 </li>
                 <li>
-                  <Link href={`${cityPath(coldest.city)}${suffix}`}>
+                  <Link prefetch={false} href={`${cityPath(coldest.city)}${suffix}`}>
                     <span className="stat-label">Coldest now</span>
                     <span className="stat-value">{formatTempUnit(coldest.temp, units)}</span>
                     <span className="stat-place">{coldest.city.name}</span>
@@ -104,7 +104,7 @@ export function Nation({
                 </li>
                 <li>
                   {raining[0] ? (
-                    <Link href={`${cityPath(raining[0].city)}${suffix}`}>
+                    <Link prefetch={false} href={`${cityPath(raining[0].city)}${suffix}`}>
                       <span className="stat-label">Raining in</span>
                       <span className="stat-value">
                         {raining.length} {raining.length === 1 ? "city" : "cities"}
@@ -121,7 +121,7 @@ export function Nation({
                 </li>
                 {air[0] && (
                   <li>
-                    <Link href="/air-quality">
+                    <Link prefetch={false} href="/air-quality">
                       <span className="stat-label">Worst air now</span>
                       <span className="stat-value">AQI {air[0].aqi}</span>
                       <span className="stat-place">{air[0].city.name}</span>

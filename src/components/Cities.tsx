@@ -20,7 +20,7 @@ export function CityCards({ cities, now, units }: { cities: City[]; now: CityNow
         const entry = now.find((n) => n.city.slug === city.slug);
         return (
           <li key={city.slug}>
-            <Link href={`${cityPath(city)}${suffix}`}>
+            <Link prefetch={false} href={`${cityPath(city)}${suffix}`}>
               <span className="city-name">{city.name}</span>
               <span className="city-region">{entry ? conditionLabel(entry.condition, entry.isDay) : city.region}</span>
               {entry && <WeatherIcon condition={entry.condition} isDay={entry.isDay} size={26} />}
