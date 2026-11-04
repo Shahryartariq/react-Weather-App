@@ -1,8 +1,11 @@
 import "@fontsource-variable/bricolage-grotesque";
 import "./globals.css";
 
+import { GoogleAnalytics } from "@next/third-parties/google";
 import type { Metadata, Viewport } from "next";
+import { headers } from "next/headers";
 
+import { measurementId } from "@/lib/analytics";
 import { AUTHOR, SITE_DESCRIPTION, SITE_NAME, siteUrl } from "@/lib/site";
 
 export const metadata: Metadata = {
@@ -34,10 +37,14 @@ export const viewport: Viewport = {
   ],
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default async function RootLayout({ children }: LayoutProps<"/">) {
+  const gaId = measurementId();
+  // The proxy puts this request's CSP nonce in x-nonce; the analytics scripts need it to run.
+  const nonce = gaId ? ((await headers()).get("x-nonce") ?? undefined) : undefined;
   return (
     <html lang="en">
       <body>{children}</body>
+      {gaId && <GoogleAnalytics gaId={gaId} nonce={nonce} />}
     </html>
   );
 }

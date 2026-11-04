@@ -211,3 +211,35 @@ describe("cities and site", async () => {
     process.env = saved;
   });
 });
+
+describe("analytics and security policy", async () => {
+  const { measurementId } = await import("./analytics");
+  const { buildCsp } = await import("./csp");
+
+  it("accepts only well-formed GA4 measurement IDs", () => {
+    const saved = process.env.GA_MEASUREMENT_ID;
+    for (const [value, expected] of [
+      ["G-ABC123XYZ9", "G-ABC123XYZ9"],
+      [" g-abc123xyz9 ", "G-ABC123XYZ9"],
+      ["ABC123XYZ9", null],
+      ["UA-12345-1", null],
+      ["G-1;alert(1)", null],
+      ["", null],
+    ] as const) {
+      process.env.GA_MEASUREMENT_ID = value;
+      expect(measurementId(), value).toBe(expected);
+    }
+    process.env.GA_MEASUREMENT_ID = saved;
+  });
+
+  it("allows Google Analytics hosts only when analytics is on", () => {
+    const off = buildCsp({ nonce: "abc", dev: false, analytics: false });
+    const on = buildCsp({ nonce: "abc", dev: false, analytics: true });
+    expect(off).not.toContain("google");
+    expect(on).toContain("script-src 'self' 'nonce-abc' 'strict-dynamic' https://www.googletagmanager.com");
+    expect(on).toMatch(/connect-src 'self' https:\/\/\*\.google-analytics\.com/);
+    expect(on).toContain("frame-ancestors 'none'");
+    expect(on).not.toContain("unsafe-inline");
+    expect(buildCsp({ nonce: "abc", dev: true, analytics: false })).toContain("'unsafe-eval'");
+  });
+});

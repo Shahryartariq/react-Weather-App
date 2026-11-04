@@ -67,6 +67,7 @@ Browser ──▶ Next.js on Vercel ──▶ OpenWeather
 ## Security and accessibility
 
 - A strict Content Security Policy with a fresh nonce on every request (`src/proxy.ts`), plus `X-Frame-Options`, `Referrer-Policy`, HSTS and a `Permissions-Policy` that allows only geolocation.
+- Google Analytics is opt-in through `GA_MEASUREMENT_ID` and loads under the same nonce-based policy. Locations from "Use my location" are rounded to about 1 km before they go into the URL.
 - Input to `/api/places` is validated, and errors never echo the upstream URL (which holds the key).
 - Landmarks, a skip link, a fully keyboard-operable search combobox, visible focus, text contrast of at least 4.5:1 on every sky colour, and support for reduced motion. End-to-end tests run axe-core on every page type and fail on any serious WCAG 2.1 AA issue.
 
@@ -94,6 +95,7 @@ WEATHER_SAMPLE_DATA=1 npm run dev
 |---|---|---|
 | `OPENWEATHER_API_KEY` | Yes | Your OpenWeather key. Server-side only. |
 | `SITE_URL` | No | Public address for canonical links and the sitemap. Defaults to `https://getskycast.vercel.app` on Vercel and `http://localhost:3000` elsewhere. |
+| `GA_MEASUREMENT_ID` | No | Google Analytics 4 measurement ID (`G-…`). When set, the Google tag loads with the page's CSP nonce and the policy allows Google's analytics hosts; when unset, nothing from Google loads. |
 | `WEATHER_SAMPLE_DATA` | No | Set to `1` to use the sample data in `src/lib/fixtures`. Ignored in Vercel production. |
 
 ## Scripts

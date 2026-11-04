@@ -28,7 +28,8 @@ export function LocateButton({ units }: { units: Units }) {
     navigator.geolocation.getCurrentPosition(
       ({ coords }) => {
         setBusy(false);
-        router.push(placeHref({ lat: +coords.latitude.toFixed(3), lon: +coords.longitude.toFixed(3) }, units));
+        // Two decimals (~1 km) is plenty for weather and keeps the exact position out of the URL.
+        router.push(placeHref({ lat: +coords.latitude.toFixed(2), lon: +coords.longitude.toFixed(2) }, units));
       },
       (error) => {
         setBusy(false);
