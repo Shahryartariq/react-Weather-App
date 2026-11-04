@@ -89,8 +89,9 @@ export default async function AboutPage() {
             beside high ground, because the model overstates them.
           </p>
           <p className="prose">
-            The map on the home page uses a Natural Earth outline. It&apos;s simplified to show where cities are, and
-            isn&apos;t an authority on borders.
+            The map on the home page follows Pakistan&apos;s official political map, which shows Jammu and Kashmir as
+            disputed territory, with its final status to be decided under the relevant UN Security Council resolutions.
+            The outline is drawn from Natural Earth data and simplified to show where cities are.
           </p>
         </section>
 

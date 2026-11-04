@@ -31,7 +31,8 @@ const LABELS: Record<string, Label> = {
 
 /**
  * Pakistan, with every city as a dot at its real position, coloured by its temperature.
- * The outline is a single SVG path built by scripts/build-map.ts, so there's no map library.
+ * Jammu and Kashmir is drawn as disputed territory, as on Pakistan's official map.
+ * The outlines are SVG paths built by scripts/build-map.ts, so there's no map library.
  */
 export function PakistanMap({ nation, units }: { nation: CityNow[]; units: Units }) {
   const labelled = nation.filter(({ city }) => LABELS[city.slug]);
@@ -42,7 +43,14 @@ export function PakistanMap({ nation, units }: { nation: CityNow[]; units: Units
       role="img"
       aria-label={`Map of the temperature right now in ${nation.length} cities across Pakistan`}
     >
+      <path d={outline.disputed} className="pk-disputed" />
       <path d={outline.path} className="pk-outline" />
+      <text x={x(75.05)} y={y(33.02)} className="pk-region">
+        Jammu &amp; Kashmir
+        <tspan x={x(75.05)} dy="14">
+          (disputed)
+        </tspan>
+      </text>
       {labelled.map(({ city }) => {
         const { leader } = LABELS[city.slug];
         if (!leader) return null;

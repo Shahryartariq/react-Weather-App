@@ -1,9 +1,9 @@
 /** The home page map's drawing area. Shared with the script that builds the outline, so they line up. */
 export const MAP_WIDTH = 520;
-export const MAP_HEIGHT = 450;
+export const MAP_HEIGHT = 428;
 
 const WEST = 60.6;
-const EAST = 78.6; // Past the last city, to leave room for its label.
+const EAST = 79.6; // Past Jammu and Kashmir's eastern edge.
 const NORTH = 37.2;
 const SOUTH = 23.7;
 

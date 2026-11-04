@@ -87,7 +87,7 @@ scripts/build-climate.ts ──▶ Open-Meteo ──▶ src/lib/data/climate.jso
 
 **A canonical URL bug you can't see.** Vercel's `VERCEL_PROJECT_PRODUCTION_URL` resolved to an auto-generated alias that returned 404, so every canonical link and the sitemap told Google the real pages lived at a dead address. Everything looked fine in a browser. The domain is now set explicitly, and tests pin it.
 
-**A map without a map library.** A script turns Natural Earth's outline of Pakistan into one SVG path, about 6 KB, and checks all 50 cities against it. Each city is then a dot at its real coordinates, coloured by temperature, so the page loads no mapping code or tiles.
+**A map without a map library.** A script turns Natural Earth's boundaries into two SVG paths and checks all 50 cities against them. Each city is then a dot at its real coordinates, coloured by temperature, so the page loads no mapping code or tiles. Jammu and Kashmir is drawn as disputed territory, following Pakistan's official map.
 
 **A strict CSP has a cost.** Nonces need every page to render per request, because a prerendered page can't carry one. Two new pages were silently prerendered, which would have blocked all their scripts in production, so there's now a test that checks the nonce on every page type. Weather pages are dynamic anyway, and the data behind them is cached, so the trade is cheap here.
 

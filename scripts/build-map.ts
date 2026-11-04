@@ -1,6 +1,9 @@
 /**
- * Builds src/lib/data/pakistan-outline.json: the SVG path for the home page map.
- * Source: Natural Earth 1:50m (public domain), through the world-atlas package.
+ * Builds src/lib/data/pakistan-outline.json: the SVG paths for the home page map.
+ * Source: Natural Earth 1:50m (public domain).
+ *
+ * The map follows Pakistan's official political map of August 2020 for Jammu and Kashmir and
+ * Siachen: Siachen sits inside the outline, and Jammu and Kashmir is a separate disputed area.
  *
  * The output is committed, so the app needs no map library or boundary file.
  *   node scripts/build-map.ts
@@ -10,49 +13,39 @@ import { writeFileSync } from "node:fs";
 import { CITIES, distanceKm } from "../src/lib/cities.ts";
 import { mapX, mapY } from "../src/lib/map.ts";
 
-const SOURCE = "https://cdn.jsdelivr.net/npm/world-atlas@2.0.2/countries-50m.json";
+const SOURCE = "https://raw.githubusercontent.com/nvkelso/natural-earth-vector/v5.1.2/geojson";
 
 type Point = [number, number];
 
-interface Topology {
-  transform: { scale: Point; translate: Point };
-  arcs: Point[][];
-  objects: {
-    countries: {
-      geometries: { type: string; arcs: number[][] | number[][][]; properties: { name: string } }[];
-    };
-  };
+interface Feature {
+  properties: Record<string, string>;
+  geometry: { type: "Polygon"; coordinates: Point[][] } | { type: "MultiPolygon"; coordinates: Point[][][] };
 }
 
-const topology = (await (await fetch(SOURCE)).json()) as Topology;
-const { scale, translate } = topology.transform;
-
-/** TopoJSON stores each arc as offsets from the previous point. */
-const decoded = topology.arcs.map((arc) => {
-  let x = 0;
-  let y = 0;
-  return arc.map(([dx, dy]): Point => {
-    x += dx;
-    y += dy;
-    return [x * scale[0] + translate[0], y * scale[1] + translate[1]];
-  });
-});
-
-/** Joins arcs into a ring. A negative index means that arc runs backwards. */
-function ring(indices: number[]): Point[] {
-  const points: Point[] = [];
-  for (const index of indices) {
-    const arc = index >= 0 ? decoded[index] : [...decoded[~index]].reverse();
-    points.push(...(points.length ? arc.slice(1) : arc));
-  }
-  return points;
+async function features(file: string): Promise<Feature[]> {
+  const response = await fetch(`${SOURCE}/${file}`);
+  if (!response.ok) throw new Error(`${file}: ${response.status}`);
+  return ((await response.json()) as { features: Feature[] }).features;
 }
 
-const pakistan = topology.objects.countries.geometries.find((g) => g.properties.name === "Pakistan");
-if (!pakistan) throw new Error("Pakistan not found in the source data");
+/** The outer ring of each polygon in a feature. */
+function rings({ geometry }: Feature): Point[][] {
+  const polygons = geometry.type === "Polygon" ? [geometry.coordinates] : geometry.coordinates;
+  return polygons.map((polygon) => polygon[0]);
+}
 
-const polygons = (pakistan.type === "Polygon" ? [pakistan.arcs] : pakistan.arcs) as number[][][];
-const rings = polygons.map((polygon) => ring(polygon[0]));
+function find(list: Feature[], name: string, key: string): Feature {
+  const match = list.find((feature) => feature.properties[key] === name);
+  if (!match) throw new Error(`${name} not found`);
+  return match;
+}
+
+const countries = await features("ne_50m_admin_0_countries.geojson");
+const disputed = await features("ne_50m_admin_0_breakaway_disputed_areas.geojson");
+
+const pakistan = rings(find(countries, "Pakistan", "ADMIN"));
+const siachen = rings(find(disputed, "Siachen Glacier", "BRK_NAME"));
+const kashmir = rings(find(disputed, "Jammu and Kashmir", "BRK_NAME"));
 
 const inside = ([lon, lat]: Point, points: Point[]) => {
   let result = false;
@@ -65,20 +58,21 @@ const inside = ([lon, lat]: Point, points: Point[]) => {
 };
 
 // Every city should sit inside the outline, or within a few km of the coast or border.
-const all = rings.flat();
 for (const city of CITIES) {
-  if (rings.some((points) => inside([city.lon, city.lat], points))) continue;
-  const km = Math.min(...all.map(([lon, lat]) => distanceKm(city, { lat, lon })));
+  if (pakistan.some((points) => inside([city.lon, city.lat], points))) continue;
+  const km = Math.min(...pakistan.flat().map(([lon, lat]) => distanceKm(city, { lat, lon })));
   console.log(`outside: ${city.slug}, ${km.toFixed(1)} km from the outline`);
 }
 
 const number = (value: number) => value.toFixed(1).replace(/\.0$/, "");
-const path = rings
-  .map((points) => `M${points.map(([lon, lat]) => `${number(mapX(lon))} ${number(mapY(lat))}`).join("L")}Z`)
-  .join("");
+const toPath = (list: Point[][]) =>
+  list.map((points) => `M${points.map(([lon, lat]) => `${number(mapX(lon))} ${number(mapY(lat))}`).join("L")}Z`).join("");
 
-writeFileSync("src/lib/data/pakistan-outline.json", `${JSON.stringify({ path })}\n`);
+const output = { path: toPath([...pakistan, ...siachen]), disputed: toPath(kashmir) };
+writeFileSync("src/lib/data/pakistan-outline.json", `${JSON.stringify(output)}\n`);
+
+const all = [...pakistan, ...siachen, ...kashmir].flat();
 const lons = all.map(([lon]) => lon);
 const lats = all.map(([, lat]) => lat);
-console.log(`rings ${rings.length}, points ${all.length}, path ${path.length} bytes`);
+console.log(`paths ${output.path.length} + ${output.disputed.length} bytes`);
 console.log(`lon ${Math.min(...lons).toFixed(2)} to ${Math.max(...lons).toFixed(2)}, lat ${Math.min(...lats).toFixed(2)} to ${Math.max(...lats).toFixed(2)}`);
