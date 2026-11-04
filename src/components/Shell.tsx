@@ -9,6 +9,7 @@ import type { Sky, Units } from "@/lib/types";
 
 import { LocateButton } from "./LocateButton";
 import { SearchBox } from "./SearchBox";
+import { ThemeSwitch } from "./ThemeSwitch";
 import { UnitSwitch } from "./UnitSwitch";
 
 const SHORT_NAMES: Record<string, string> = { "khyber-pakhtunkhwa": "KP", "gilgit-baltistan": "Gilgit-Baltistan" };
@@ -54,6 +55,7 @@ export function Shell({
           <LocateButton units={units} />
           {unitPath && <UnitSwitch units={units} basePath={unitPath} params={keep ?? new URLSearchParams()} />}
         </div>
+        <ThemeSwitch />
       </header>
       <nav className="regions" aria-label="Regions of Pakistan">
         <ul>

@@ -16,11 +16,34 @@
   /* Sky defaults; overridden per [data-sky]. White text passes 4.5:1 on every pair. */
   --sky-top: #44515f;
   --sky-bottom: #5a6878;
+  /* Laid over the sky in dark mode, so it doesn't glare against the dark page. */
+  --sky-dim: transparent;
+  --aqi-5: #8f3f97;
+  --aqi-6: #7e1f32;
   color-scheme: light;
 }
 
+/*
+ * Dark mode: a choice saved by the reader (data-theme, set on the server), or the system's
+ * setting when there isn't one. The two blocks must match; a media query can't share a rule
+ * with a selector, and light-dark() would break older phones.
+ */
+:root[data-theme="dark"] {
+  --bg: #0e1217;
+  --surface: #161b22;
+  --ink: #e6ebf1;
+  --muted: #9aa5b3;
+  --line: #252c35;
+  --accent: #7db4ee;
+  --shadow: 0 1px 2px rgb(0 0 0 / 40%);
+  --sky-dim: rgb(6 10 18 / 32%);
+  --aqi-5: #b86cc0;
+  --aqi-6: #d0566f;
+  color-scheme: dark;
+}
+
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme="light"]) {
     --bg: #0e1217;
     --surface: #161b22;
     --ink: #e6ebf1;
@@ -28,6 +51,9 @@
     --line: #252c35;
     --accent: #7db4ee;
     --shadow: 0 1px 2px rgb(0 0 0 / 40%);
+    --sky-dim: rgb(6 10 18 / 32%);
+    --aqi-5: #b86cc0;
+    --aqi-6: #d0566f;
     color-scheme: dark;
   }
 }
@@ -123,7 +149,9 @@ code {
 
 .sky {
   padding-bottom: 112px;
-  background: linear-gradient(180deg, var(--sky-top) 0%, var(--sky-bottom) 100%);
+  background:
+    linear-gradient(var(--sky-dim), var(--sky-dim)),
+    linear-gradient(180deg, var(--sky-top) 0%, var(--sky-bottom) 100%);
 }
 
 .sky-short {
@@ -157,9 +185,9 @@ main:focus {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
+  gap: 8px;
   min-height: 76px;
-  background: var(--sky-top);
+  background: linear-gradient(var(--sky-dim), var(--sky-dim)), var(--sky-top);
 }
 
 .brand {
@@ -195,7 +223,7 @@ main:focus {
 .regions {
   padding-inline: max(20px, calc((100vw - var(--wrap)) / 2));
   padding-bottom: 6px;
-  background: var(--sky-top);
+  background: linear-gradient(var(--sky-dim), var(--sky-dim)), var(--sky-top);
   color: #fff;
 }
 
@@ -265,6 +293,7 @@ main:focus {
   display: flex;
   align-items: center;
   gap: 8px;
+  margin-left: auto;
 }
 
 /* Search */
@@ -435,6 +464,54 @@ main:focus {
   color: var(--ink);
   font-size: 0.88rem;
   box-shadow: 0 18px 40px -12px rgb(0 0 0 / 35%);
+}
+
+.theme-switch {
+  display: inline-flex;
+  flex: none;
+  min-inline-size: 0;
+  margin: 0;
+  padding: 3px;
+  border: 1px solid rgb(255 255 255 / 28%);
+  border-radius: 999px;
+  background: rgb(255 255 255 / 10%);
+}
+
+.theme-switch label {
+  position: relative;
+  display: block;
+  cursor: pointer;
+}
+
+.theme-switch:disabled label {
+  cursor: default;
+}
+
+.theme-switch svg {
+  display: block;
+  width: 34px;
+  height: 34px;
+  padding: 8px;
+  border-radius: 50%;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.theme-switch label:hover svg {
+  background: rgb(255 255 255 / 14%);
+}
+
+.theme-switch input:checked + svg {
+  background: #fff;
+  color: var(--sky-top);
+}
+
+.theme-switch input:focus-visible + svg {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
 }
 
 .units {
@@ -800,8 +877,8 @@ main:focus {
 .aqi-2 { background: #e9c547; }
 .aqi-3 { background: #ee9446; }
 .aqi-4 { background: #d9483b; }
-.aqi-5 { background: #8f3f97; }
-.aqi-6 { background: #7e1f32; }
+.aqi-5 { background: var(--aqi-5); }
+.aqi-6 { background: var(--aqi-6); }
 
 .details .detail-sun {
   grid-column: 1 / -1;
@@ -1420,8 +1497,22 @@ main:focus {
     display: none;
   }
 
+  /* The theme switch sits beside the brand, and search gets the next row to itself. */
+  .theme-switch {
+    order: 1;
+    margin-left: auto;
+  }
+
+  .theme-switch svg {
+    width: 30px;
+    height: 30px;
+    padding: 7px;
+  }
+
   .tools {
+    order: 2;
     width: 100%;
+    margin-left: 0;
   }
 
   .search {
@@ -1481,6 +1572,39 @@ main:focus {
 
   .details .detail-sun {
     grid-template-columns: minmax(0, 1fr) auto;
+  }
+}
+
+/* Small phones: the brand and theme switch still share one row. */
+@media (max-width: 360px) {
+  .brand {
+    gap: 7px;
+    font-size: 1.05rem;
+  }
+
+  .brand svg {
+    width: 26px;
+    height: 26px;
+  }
+
+  .theme-switch svg {
+    width: 28px;
+    height: 28px;
+    padding: 6px;
+  }
+
+  /* Enough room for the whole "Search a city" placeholder. */
+  .search input {
+    padding: 0 4px 0 32px;
+  }
+
+  .search-glyph {
+    left: 10px;
+  }
+
+  .units a {
+    min-width: 34px;
+    padding: 0 4px;
   }
 }
 
