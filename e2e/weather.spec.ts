@@ -275,6 +275,13 @@ test.describe("SEO", () => {
     for (const href of unique) expect((await request.get(href)).status(), href).toBe(200);
   });
 
+  test("keeps the Google Search Console verification file", async ({ request }) => {
+    // Removing this file loses ownership of the site in Search Console.
+    const response = await request.get("/google4adfdcaade9a40a0.html");
+    expect(response.status()).toBe(200);
+    expect((await response.text()).trim()).toBe("google-site-verification: google4adfdcaade9a40a0.html");
+  });
+
   test("unknown cities return a real 404", async ({ request }) => {
     expect((await request.get("/weather/atlantis")).status()).toBe(404);
     expect((await request.get("/pakistan/atlantis")).status()).toBe(404);
