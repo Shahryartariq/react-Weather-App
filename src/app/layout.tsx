@@ -63,9 +63,16 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
   const nonce = gaId ? ((await headers()).get("x-nonce") ?? undefined) : undefined;
   // Read on the server so the first paint is already right. "System" leaves it to CSS.
   const theme = await readTheme();
+  // Extensions like Grammarly and Dark Reader add attributes to these two tags before React loads.
+  // suppressHydrationWarning covers only the tag's own attributes, so the page inside is still checked.
   return (
-    <html lang="en-PK" className={bricolage.variable} data-theme={theme === "system" ? undefined : theme}>
-      <body>
+    <html
+      lang="en-PK"
+      className={bricolage.variable}
+      data-theme={theme === "system" ? undefined : theme}
+      suppressHydrationWarning
+    >
+      <body suppressHydrationWarning>
         <ThemeProvider initial={theme}>{children}</ThemeProvider>
       </body>
       {gaId && <GoogleAnalytics gaId={gaId} nonce={nonce} />}
