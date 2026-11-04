@@ -14,7 +14,8 @@ export function Hourly({ hours, offset, units }: { hours: HourSlot[]; offset: nu
       <h2 id="hourly-title" className="visually-hidden">
         Next 24 hours
       </h2>
-      <ol>
+      {/* Focusable so keyboard users can scroll it sideways on small screens. */}
+      <ol tabIndex={0} aria-label="Next 24 hours">
         {hours.map((hour, index) => (
           <li key={hour.time}>
             <span className="hour-time">{index === 0 ? "Next" : formatHour(hour.time, offset)}</span>

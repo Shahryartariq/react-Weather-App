@@ -6,7 +6,7 @@ import Link from "next/link";
 export default function ErrorPage({ reset }: { error: Error & { digest?: string }; reset: () => void }) {
   return (
     <div className="page" data-sky="clouds">
-      <div className="sky">
+      <main id="main" className="sky sky-short">
         <section className="notice" aria-labelledby="error-title">
           <h1 id="error-title">The forecast didn&apos;t load</h1>
           <p>The weather service didn&apos;t answer in time. This is usually brief.</p>
@@ -19,7 +19,7 @@ export default function ErrorPage({ reset }: { error: Error & { digest?: string 
             </Link>
           </p>
         </section>
-      </div>
+      </main>
     </div>
   );
 }

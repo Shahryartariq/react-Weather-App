@@ -51,6 +51,7 @@ describe("formatting", () => {
     expect(formatTemp(24.3, "imperial")).toBe("76°");
     expect(formatTemp(-0.4, "metric")).toBe("0°");
     expect(formatTemp(-17.78, "imperial")).toBe("0°");
+    expect(formatTemp(-3.4, "metric")).toBe("−3°");
   });
 
   it("formats wind, pressure and visibility in both systems", () => {
@@ -170,5 +171,43 @@ describe("query parsing", () => {
     expect(parseUnits({ units: "kelvin" })).toBe("metric");
     expect(placeHref({ lat: 1, lon: 2 }, "imperial")).toBe("/?lat=1&lon=2&units=imperial");
     expect(placeHref({ lat: 1, lon: 2 }, "metric")).toBe("/?lat=1&lon=2");
+  });
+});
+
+describe("cities and site", async () => {
+  const { CITIES, cityBySlug, cityNear } = await import("./cities");
+  const { jsonLd, siteUrl } = await import("./site");
+
+  it("has unique slugs that match their names", () => {
+    const slugs = CITIES.map((c) => c.slug);
+    expect(new Set(slugs).size).toBe(slugs.length);
+    for (const city of CITIES) expect(city.slug).toMatch(/^[a-z]+(-[a-z]+)*$/);
+    expect(cityBySlug("london")?.country).toBe("GB");
+    expect(cityBySlug("atlantis")).toBeUndefined();
+  });
+
+  it("sends searches for listed cities to their own page", () => {
+    expect(cityNear(51.5073, -0.1276)?.slug).toBe("london");
+    expect(cityNear(42.98, -81.23)).toBeUndefined(); // London, Ontario
+    expect(placeHref({ lat: 51.507, lon: -0.128 }, "metric")).toBe("/weather/london");
+    expect(placeHref({ lat: 51.507, lon: -0.128 }, "imperial")).toBe("/weather/london?units=imperial");
+  });
+
+  it("escapes </script> inside structured data", () => {
+    expect(jsonLd({ name: "</script><b>" })).not.toContain("</script>");
+    expect(JSON.parse(jsonLd({ name: "</script>" })).name).toBe("</script>");
+  });
+
+  it("picks the public URL from SITE_URL, then Vercel, then localhost", () => {
+    const saved = { ...process.env };
+    process.env.SITE_URL = "";
+    process.env.VERCEL_PROJECT_PRODUCTION_URL = "skycast.vercel.app";
+    expect(siteUrl().toString()).toBe("https://skycast.vercel.app/");
+    process.env.SITE_URL = "https://weather.example.com";
+    expect(siteUrl().toString()).toBe("https://weather.example.com/");
+    process.env.SITE_URL = "";
+    process.env.VERCEL_PROJECT_PRODUCTION_URL = "";
+    expect(siteUrl().toString()).toBe("http://localhost:3000/");
+    process.env = saved;
   });
 });

@@ -1,3 +1,4 @@
+import { cityNear, cityPath } from "./cities";
 import type { Place, Units } from "./types";
 
 export const DEFAULT_PLACE: Place = {
@@ -40,8 +41,14 @@ export function parseLocation(params: Params): LocationQuery {
   return { kind: "default" };
 }
 
-/** Builds a page URL for a place, keeping the reader's units. */
+/**
+ * Builds a page URL for a place, keeping the reader's units. Places that have their own
+ * page (/weather/london) link there, so search results land on clean, shareable URLs.
+ */
 export function placeHref(place: Pick<Place, "lat" | "lon">, units: Units): string {
+  const suffix = units === "imperial" ? "?units=imperial" : "";
+  const city = cityNear(place.lat, place.lon);
+  if (city) return `${cityPath(city)}${suffix}`;
   const params = new URLSearchParams({ lat: String(place.lat), lon: String(place.lon) });
   if (units === "imperial") params.set("units", "imperial");
   return `/?${params}`;
