@@ -466,6 +466,147 @@ main:focus {
   box-shadow: 0 18px 40px -12px rgb(0 0 0 / 35%);
 }
 
+a.icon-button {
+  text-decoration: none;
+}
+
+/* "Weather at my location": what the connection says, above the forecast */
+
+/* Padding, not margin: a margin would collapse through .sky and show the page behind it. */
+.connection-wrap {
+  padding-top: 22px;
+}
+
+.connection {
+  padding: 18px 20px;
+  border: 1px solid rgb(255 255 255 / 24%);
+  border-radius: var(--radius);
+  background: rgb(255 255 255 / 12%);
+}
+
+.connection-wrap + .hero {
+  padding-top: 26px;
+}
+
+.connection-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.82rem;
+  font-weight: 650;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.connection-title svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+}
+
+.connection-facts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 140px), 1fr));
+  gap: 14px 20px;
+  margin: 14px 0 0;
+}
+
+.connection-facts dt {
+  font-size: 0.84rem;
+  opacity: 0.85;
+}
+
+.connection-facts dd {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 10px;
+  margin: 4px 0 0;
+  font-size: 1.08rem;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.connection-ip {
+  font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  font-size: 0.95em;
+  overflow-wrap: anywhere;
+}
+
+.copy-button {
+  min-width: 52px;
+  height: 28px;
+  padding: 0 10px;
+  border: 1px solid rgb(255 255 255 / 34%);
+  border-radius: 999px;
+  background: transparent;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.copy-button:hover {
+  background: rgb(255 255 255 / 16%);
+}
+
+.connection-note {
+  max-width: 64ch;
+  margin-top: 14px;
+  font-size: 0.92rem;
+  line-height: 1.5;
+  opacity: 0.92;
+}
+
+.connection-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.notice .notice-actions {
+  margin-top: 24px;
+}
+
+.button-icon {
+  gap: 8px;
+}
+
+.button-icon svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+}
+
+.button:disabled {
+  cursor: progress;
+  opacity: 0.85;
+}
+
+.locate-labelled .locate-message {
+  right: auto;
+  left: 0;
+}
+
+/* Home page: the no-typing shortcut under the summary */
+
+.nation-locate {
+  margin-top: 20px;
+}
+
+.nation-locate svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+}
+
 .theme-switch {
   display: inline-flex;
   flex: none;

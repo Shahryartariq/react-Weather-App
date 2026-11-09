@@ -106,8 +106,10 @@ export default async function AboutPage() {
             <a href={SOURCE_URL} rel="noopener">
               source code
             </a>{" "}
-            is open. {SITE_NAME} has no ads and no accounts. If you use your location, it&apos;s rounded to about 1 km
-            first. If you pick a light or dark theme, a cookie remembers it.
+            is open. {SITE_NAME} has no ads and no accounts. “Weather at my location” uses the approximate place
+            that Vercel, the host, already looks up from your IP address for every request. It isn&apos;t stored or sent
+            to anyone else; only coordinates rounded to about 1 km go to OpenWeather for the forecast. The same rounding
+            applies when you share your exact location. If you pick a light or dark theme, a cookie remembers it.
             {measurementId() !== null && " Visits are counted with Google Analytics."}{" "}
             <Link prefetch={false} href="/">See today&apos;s weather</Link>.
           </p>

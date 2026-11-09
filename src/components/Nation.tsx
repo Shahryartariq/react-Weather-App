@@ -86,6 +86,14 @@ export function Nation({
               </p>
             )}
 
+            <Link prefetch={false} href={`/my-location${suffix}`} className="button button-icon nation-locate">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M12 21.5s-6.5-6.2-6.5-11.5a6.5 6.5 0 0 1 13 0c0 5.3-6.5 11.5-6.5 11.5Z" />
+                <circle cx="12" cy="10" r="2.4" />
+              </svg>
+              Check weather at my location
+            </Link>
+
             {hottest && (
               <ul className="stats">
                 <li>

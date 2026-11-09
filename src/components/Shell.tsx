@@ -7,7 +7,6 @@ import { usingSampleData } from "@/lib/openweather";
 import { AUTHOR, SOURCE_URL } from "@/lib/site";
 import type { Sky, Units } from "@/lib/types";
 
-import { LocateButton } from "./LocateButton";
 import { SearchBox } from "./SearchBox";
 import { ThemeSwitch } from "./ThemeSwitch";
 import { UnitSwitch } from "./UnitSwitch";
@@ -52,7 +51,13 @@ export function Shell({
         </Link>
         <div className="tools">
           <SearchBox units={units} />
-          <LocateButton units={units} />
+          <Link prefetch={false} href={`/my-location${suffix}`} className="icon-button" title="Weather at my location">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M12 21.5s-6.5-6.2-6.5-11.5a6.5 6.5 0 0 1 13 0c0 5.3-6.5 11.5-6.5 11.5Z" />
+              <circle cx="12" cy="10" r="2.4" />
+            </svg>
+            <span className="visually-hidden">Weather at my location</span>
+          </Link>
           {unitPath && <UnitSwitch units={units} basePath={unitPath} params={keep ?? new URLSearchParams()} />}
         </div>
         <ThemeSwitch />
@@ -124,6 +129,9 @@ function Footer({ units }: { units: Units }) {
               <Link prefetch={false} href="/air-quality">Pakistan air quality</Link>
             </li>
             <li>
+              <Link prefetch={false} href={`/my-location${suffix}`}>Weather at my location</Link>
+            </li>
+            <li>
               <Link prefetch={false} href="/about">About and data sources</Link>
             </li>
             <li>
@@ -163,7 +171,7 @@ function Footer({ units }: { units: Units }) {
           .
         </p>
         {measurementId() !== null && (
-          <p>Visits are counted with Google Analytics. Locations from “Use my location” are rounded to about 1 km.</p>
+          <p>Visits are counted with Google Analytics. Your IP address and location are never sent to it.</p>
         )}
         {usingSampleData() && <p className="sample-badge">Sample data: set OPENWEATHER_API_KEY for live weather.</p>}
         <p>

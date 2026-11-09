@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type { ReactNode } from "react";
 
 import { skyFor } from "@/lib/conditions";
@@ -82,7 +83,9 @@ function Notice({ outcome }: { outcome: Exclude<Outcome, { kind: "ok" }> }) {
     return (
       <section className="notice" aria-labelledby="notice-title">
         <h1 id="notice-title">No place called “{outcome.query}”</h1>
-        <p>Check the spelling, or add the country: “Lahore, PK”, “Paris, FR”. You can also use your location.</p>
+        <p>Check the spelling, or add the country: “Lahore, PK”, “Paris, FR”. Or{" "}
+          <Link prefetch={false} href="/my-location">see the weather at your location</Link>.
+        </p>
       </section>
     );
   }
