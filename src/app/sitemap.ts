@@ -7,6 +7,6 @@ import { siteUrl } from "@/lib/site";
 export default function sitemap(): MetadataRoute.Sitemap {
   const base = siteUrl();
   const lastModified = new Date();
-  const paths = ["/", "/air-quality", "/about", ...PROVINCES.map(provincePath), ...CITIES.map(cityPath)];
+  const paths = ["/", "/air-quality", "/my-location", "/about", ...PROVINCES.map(provincePath), ...CITIES.map(cityPath)];
   return paths.map((path) => ({ url: new URL(path, base).toString(), lastModified }));
 }

@@ -51,6 +51,8 @@ export function proxy(request: NextRequest) {
 
   const response = NextResponse.next({ request: { headers: requestHeaders } });
   response.headers.set("Content-Security-Policy", csp);
+  // Built from the visitor's own IP address, so no shared cache may keep a copy.
+  if (pathname === "/my-location") response.headers.set("Cache-Control", "private, no-store, max-age=0");
   return response;
 }
 

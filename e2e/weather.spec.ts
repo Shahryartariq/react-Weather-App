@@ -23,6 +23,91 @@ async function expectAccessible(page: Page) {
   expect(serious.map((v) => `${v.id}: ${v.nodes.map((n) => n.target.join(" ")).join(", ")}`)).toEqual([]);
 }
 
+/** What Vercel's edge adds to a request from Islamabad (here in place of the real network). */
+const VERCEL_ISLAMABAD = {
+  "x-real-ip": "203.0.113.42",
+  "x-vercel-ip-city": "Islamabad",
+  "x-vercel-ip-country": "PK",
+  "x-vercel-ip-timezone": "Asia/Karachi",
+  "x-vercel-ip-latitude": "33.6938",
+  "x-vercel-ip-longitude": "73.0652",
+};
+
+test.describe("weather at my location", () => {
+  test("shows the IP address, the place and its weather without typing", async ({ page }) => {
+    await page.setExtraHTTPHeaders(VERCEL_ISLAMABAD);
+    const response = await page.goto("/my-location");
+    // Built from this visitor's IP address: a shared cache must never keep it.
+    expect(response!.headers()["cache-control"]).toMatch(/no-store/);
+    expect(response!.headers()["cache-control"]).toMatch(/private/);
+
+    const card = page.getByRole("region", { name: "Your location" });
+    await expect(card.getByText("203.0.113.42")).toBeVisible();
+    await expect(card.getByText("Islamabad, Pakistan")).toBeVisible();
+    await expect(card.getByText("33.69° N, 73.07° E")).toBeVisible();
+    await expect(card.getByText("Asia/Karachi")).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1, name: "Islamabad weather" })).toBeVisible();
+    await expect(page.locator(".hero-temp")).toBeVisible();
+    await expect(page.locator(".daily li")).toHaveCount(5);
+
+    await card.getByRole("link", { name: "Full Islamabad page" }).click();
+    await expect(page).toHaveURL(/\/weather\/islamabad$/);
+  });
+
+  test("keeps °F when switching units", async ({ page }) => {
+    await page.setExtraHTTPHeaders(VERCEL_ISLAMABAD);
+    await page.goto("/my-location");
+    await page.getByRole("link", { name: "°F" }).click();
+    await expect(page).toHaveURL(/\/my-location\?units=imperial$/);
+    await expect(page.getByRole("heading", { level: 1, name: "Islamabad weather" })).toBeVisible();
+  });
+
+  test("finds the weather from the city alone", async ({ page }) => {
+    await page.setExtraHTTPHeaders({ "x-vercel-ip-city": "Lahore", "x-vercel-ip-country": "PK" });
+    await page.goto("/my-location");
+    await expect(page.getByRole("heading", { level: 1, name: "Lahore weather" })).toBeVisible();
+    await expect(page.getByRole("region", { name: "Your location" }).getByText("Lahore, Pakistan")).toBeVisible();
+  });
+
+  test("copies the IP address", async ({ page, context, browserName, isMobile }) => {
+    test.skip(browserName !== "chromium" || isMobile, "Clipboard permissions are a desktop Chromium feature");
+    await context.grantPermissions(["clipboard-read", "clipboard-write"]);
+    await page.setExtraHTTPHeaders(VERCEL_ISLAMABAD);
+    await page.goto("/my-location");
+    await page.getByRole("button", { name: "Copy IP address" }).click();
+    await expect(page.getByRole("button", { name: "Copy IP address" })).toHaveText("Copied");
+    expect(await page.evaluate(() => navigator.clipboard.readText())).toBe("203.0.113.42");
+  });
+
+  test("explains when the connection gives no location", async ({ page }) => {
+    await page.goto("/my-location");
+    await expect(page.getByRole("heading", { level: 1, name: "We couldn't tell where you are" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Use my exact location" })).toBeVisible();
+  });
+
+  test("is one click from every page", async ({ page }) => {
+    await page.setExtraHTTPHeaders(VERCEL_ISLAMABAD);
+    await page.goto("/");
+    await page.getByRole("link", { name: "Check weather at my location" }).click();
+    await expect(page).toHaveURL(/\/my-location$/);
+    await page.goto("/weather/lahore");
+    await page.getByRole("banner").getByRole("link", { name: "Weather at my location" }).click();
+    await expect(page.getByRole("heading", { level: 1, name: "Islamabad weather" })).toBeVisible();
+  });
+
+  for (const scheme of ["light", "dark"] as const) {
+    test(`no serious WCAG 2.1 AA issues in ${scheme}`, async ({ page }) => {
+      await page.emulateMedia({ colorScheme: scheme });
+      await page.setExtraHTTPHeaders(VERCEL_ISLAMABAD);
+      await page.goto("/my-location");
+      await expectAccessible(page);
+      await page.setExtraHTTPHeaders({});
+      await page.goto("/my-location");
+      await expectAccessible(page);
+    });
+  }
+});
+
 test.describe("weather", () => {
   test("the home page shows the whole country", async ({ page }) => {
     await page.goto("/");
@@ -160,18 +245,19 @@ test.describe("weather", () => {
     await expect(page.getByRole("heading", { name: /No place called/ })).toBeVisible();
   });
 
-  test("uses the reader's location when allowed", async ({ page, context }) => {
+  test("uses the reader's exact location when allowed", async ({ page, context }) => {
     await context.grantPermissions(["geolocation"]);
     await context.setGeolocation({ latitude: 31.5656, longitude: 74.3142 });
-    await page.goto("/");
-    await page.getByRole("button", { name: "Use my location" }).click();
+    await page.goto("/my-location");
+    await page.getByRole("button", { name: "Use my exact location" }).click();
     await expect(page).toHaveURL(/\/weather\/lahore$/);
     await expect(page.getByRole("heading", { level: 1, name: "Lahore" })).toBeVisible();
   });
 
   test("has no horizontal scrolling on small screens", async ({ page }) => {
     await page.setViewportSize({ width: 320, height: 720 });
-    for (const path of ["/", "/weather/dera-ismail-khan", "/pakistan/khyber-pakhtunkhwa", "/air-quality", "/about", "/weather/nowhere"]) {
+    await page.setExtraHTTPHeaders(VERCEL_ISLAMABAD);
+    for (const path of ["/", "/weather/dera-ismail-khan", "/pakistan/khyber-pakhtunkhwa", "/air-quality", "/about", "/my-location", "/weather/nowhere"]) {
       await page.goto(path);
       expect(await page.evaluate(() => document.documentElement.scrollWidth), path).toBeLessThanOrEqual(320);
     }
@@ -423,7 +509,8 @@ test.describe("SEO", () => {
     expect(sitemap).toContain("/weather/skardu</loc>");
     expect(sitemap).toContain("/pakistan/balochistan</loc>");
     expect(sitemap).toContain("/air-quality</loc>");
-    expect(sitemap.match(/<loc>/g)?.length).toBe(59);
+    expect(sitemap).toContain("/my-location</loc>");
+    expect(sitemap.match(/<loc>/g)?.length).toBe(60);
 
     const robots = await (await request.get("/robots.txt")).text();
     expect(robots).toContain("Disallow: /api/");

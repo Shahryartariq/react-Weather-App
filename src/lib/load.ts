@@ -7,6 +7,7 @@ import { usAqi } from "./format";
 import { MissingApiKeyError, UpstreamError, getAir, getBrief, getSnapshot, placeAt, searchPlaces } from "./openweather";
 import { parseLocation } from "./query";
 import type { Condition, Place, Sky, Snapshot } from "./types";
+import type { Visitor } from "./visitor";
 
 export type Outcome =
   | { kind: "ok"; snapshot: Snapshot }
@@ -37,6 +38,26 @@ export const loadFromQuery = cache((lat: string, lon: string, q: string) =>
     return { kind: "ok", snapshot: await getSnapshot(place) };
   }),
 );
+
+/**
+ * Weather where the visitor's connection comes from: the IP's position if there is one,
+ * otherwise a search for its city. "not-found" means the connection gave nothing to go on.
+ */
+export function loadVisitor(visitor: Visitor): Promise<Outcome> {
+  return guard(async () => {
+    let place: Place;
+    if (visitor.lat !== undefined && visitor.lon !== undefined) {
+      place = await placeAt(visitor.lat, visitor.lon);
+      // No name from the reverse lookup: the IP's own city is better than "Your location".
+      if (!place.country && visitor.city) place = { ...place, name: visitor.city, country: visitor.country ?? "" };
+    } else if (visitor.city) {
+      const [match] = await searchPlaces(visitor.country ? `${visitor.city}, ${visitor.country}` : visitor.city, 1);
+      if (!match) return { kind: "not-found", query: visitor.city };
+      place = match;
+    } else return { kind: "not-found", query: "" };
+    return { kind: "ok", snapshot: await getSnapshot(place) };
+  });
+}
 
 /** Weather for a city page. */
 export const loadPlace = cache((place: Place) => guard(async () => ({ kind: "ok", snapshot: await getSnapshot(place) })));

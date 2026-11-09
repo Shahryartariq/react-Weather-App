@@ -36,7 +36,8 @@ Measured on the home, city, province and air quality pages of a local production
 - **Six province pages** and a **live air quality ranking** of every city, with health guidance for each level.
 - **Questions answered from live data**, like "Will it rain in Lahore this week?"
 - **Search anywhere in the world**, with keyboard-friendly suggestions. Recent places are remembered on your device.
-- **Use my location**, °C or °F, and times in the place's own time zone.
+- **Weather at my location, no typing**: [/my-location](https://getskycast.vercel.app/my-location) shows your IP address, your approximate place and its forecast, with no permission prompt. One tap switches to your exact location instead.
+- °C or °F, and times in the place's own time zone.
 - **Dark mode**: follows your device by default, or pick light or dark. The choice is remembered, with no flash on load, and open tabs stay in step.
 - **Works without JavaScript**: pages render on the server, search falls back to a normal form, and the theme follows your device.
 - **Installable** on a phone's home screen.
@@ -96,6 +97,8 @@ scripts/build-climate.ts ──▶ Open-Meteo ──▶ src/lib/data/climate.jso
 
 **Prefetching that cost more than it saved.** Next.js prefetches every link on screen. With over 100 links on a page and no static routes to warm, that meant 30 to 45 background requests per page view, each one a function call, and real clicks queued behind them. Flaky end-to-end tests exposed it: a measurement showed the cause, and turning prefetching off fixed both the tests and the waste.
 
+**"My location" without a lookup service or a prompt.** Vercel's edge already looks up every visitor's IP and adds the city and coordinates as request headers (overwriting anything the browser sends), so `/my-location` reads them on the server and needs no third-party IP API, no API key and no browser permission. Only coordinates rounded to about 1 km reach OpenWeather. The page is per visitor, so it's sent with `Cache-Control: private, no-store`. IP locations can be tens of kilometres off, and some Pakistani mobile networks route through Islamabad or Karachi, so the page says so and offers the exact location one tap away.
+
 **No FAQ schema, on purpose.** Google stopped showing FAQ rich results in May 2026, so the questions are plain visible content for readers rather than markup that does nothing.
 
 ## SEO
@@ -104,14 +107,14 @@ scripts/build-climate.ts ──▶ Open-Meteo ──▶ src/lib/data/climate.jso
 - Real written content on every city page, to avoid thin, templated pages.
 - A clear hierarchy: home → province → city, with visible breadcrumbs, and links to nearby cities based on real distance. Every city is one click from the home page.
 - Structured data: `WebSite`, `WebApplication`, `WebPage` with `City` and `GeoCoordinates`, and `BreadcrumbList`.
-- `sitemap.xml` lists all 59 indexable pages. Search lookups, the °F view and preview deployments stay out of the index.
+- `sitemap.xml` lists all 60 indexable pages. Search lookups, the °F view and preview deployments stay out of the index.
 - Open Graph and Twitter cards with a generated image for every city and province.
 - Unknown addresses return a real `404`, and old URLs redirect.
 
 ## Security and accessibility
 
 - A strict Content Security Policy with a fresh nonce on every request (`src/proxy.ts`, `src/lib/csp.ts`), plus `X-Frame-Options`, `Referrer-Policy`, HSTS and a `Permissions-Policy` that allows only geolocation.
-- Google Analytics is opt-in through `GA_MEASUREMENT_ID` and loads under the same nonce-based policy. Locations from "Use my location" are rounded to about 1 km before they go into the URL.
+- Google Analytics is opt-in through `GA_MEASUREMENT_ID` and loads under the same nonce-based policy. Locations from "Use my exact location" are rounded to about 1 km before they go into the URL. The IP address on `/my-location` is shown only to its owner and never stored, logged by the app or sent to analytics.
 - Input to `/api/places` is validated, and errors never echo the upstream URL (which holds the key).
 - Landmarks, a skip link, a fully keyboard-operable search combobox, visible focus, text contrast of at least 4.5:1 on every sky colour, and support for reduced motion. End-to-end tests run axe-core on every page type and fail on any serious WCAG 2.1 AA issue.
 
@@ -121,6 +124,7 @@ scripts/build-climate.ts ──▶ Open-Meteo ──▶ src/lib/data/climate.jso
 - AQI figures are estimates from a global model, not local monitors, so they can differ from sites that use sensors.
 - Mountain forecasts and climate averages are less accurate than those for the plains. Averages can run several degrees cool in deep valleys.
 - The free OpenWeather plan allows 60 calls a minute, and a fully cold cache needs more than that. Readings that miss out fill in on later requests. `/api/places` and `?lat=` lookups can spend quota too, so a busier site should add a rate-limit rule in the Vercel Firewall.
+- `/my-location` relies on Vercel's IP headers. Run anywhere else (including `npm run dev`), it shows "We couldn't tell where you are" and offers the exact location instead.
 - The interface is in English, with Urdu names and search. Full Urdu pages are the natural next step.
 
 ## Run it locally

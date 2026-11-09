@@ -12,8 +12,11 @@ const MESSAGES: Record<number, string> = {
   3: "Finding your location took too long. Try again or search for a city.",
 };
 
-/** Asks the browser for the reader's position and shows the weather there. */
-export function LocateButton({ units }: { units: Units }) {
+/**
+ * Asks the browser for the reader's exact position (GPS or Wi-Fi) and shows the weather there.
+ * With `label` it's a full button with text; without, a round icon button.
+ */
+export function LocateButton({ units, label }: { units: Units; label?: string }) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
@@ -39,15 +42,29 @@ export function LocateButton({ units }: { units: Units }) {
     );
   }
 
+  const icon = (
+    <svg viewBox="0 0 24 24" aria-hidden="true" className={busy ? "spin" : undefined}>
+      <circle cx="12" cy="12" r="3.2" />
+      <path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3" />
+      <circle cx="12" cy="12" r="7" />
+    </svg>
+  );
+
   return (
-    <div className="locate">
-      <button type="button" className="icon-button" onClick={locate} disabled={busy} aria-describedby={message ? "locate-message" : undefined}>
-        <svg viewBox="0 0 24 24" aria-hidden="true" className={busy ? "spin" : undefined}>
-          <circle cx="12" cy="12" r="3.2" />
-          <path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3" />
-          <circle cx="12" cy="12" r="7" />
-        </svg>
-        <span className="visually-hidden">{busy ? "Finding your location" : "Use my location"}</span>
+    <div className={label ? "locate locate-labelled" : "locate"}>
+      <button
+        type="button"
+        className={label ? "button button-quiet button-icon" : "icon-button"}
+        onClick={locate}
+        disabled={busy}
+        aria-describedby={message ? "locate-message" : undefined}
+      >
+        {icon}
+        {label ? (
+          <span>{busy ? "Finding your location…" : label}</span>
+        ) : (
+          <span className="visually-hidden">{busy ? "Finding your location" : "Use my location"}</span>
+        )}
       </button>
       {message && (
         <p id="locate-message" role="status" className="locate-message">
