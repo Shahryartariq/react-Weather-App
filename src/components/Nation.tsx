@@ -1,7 +1,6 @@
 import Link from "next/link";
 
 import { CITIES, HILL_STATIONS, MAJOR, PROVINCES, cityBySlug, cityPath, citiesIn, provincePath, type City } from "@/lib/cities";
-import type { Faq } from "@/lib/faq";
 import { formatTemp, formatTempUnit } from "@/lib/format";
 import { SEASONS } from "@/lib/guides";
 import type { CityAir, CityNow } from "@/lib/load";
@@ -9,7 +8,6 @@ import { formatClock, formatLongDate } from "@/lib/time";
 import type { Units } from "@/lib/types";
 
 import { CityCards } from "./Cities";
-import { Faqs } from "./CityGuide";
 import { PakistanMap } from "./PakistanMap";
 
 const PKT_OFFSET = 5 * 3600;
@@ -44,12 +42,10 @@ function ProvinceList({ title, href, cities, now, units }: { title: string; href
 export function Nation({
   now,
   air,
-  faqs,
   units,
 }: {
   now: CityNow[];
   air: CityAir[];
-  faqs: Faq[];
   units: Units;
 }) {
   const suffix = units === "imperial" ? "?units=imperial" : "";
@@ -77,8 +73,7 @@ export function Nation({
               {headline.length > 0
                 ? `It's ${headline.slice(0, -1).join(", ")} and ${headline[headline.length - 1]} right now. `
                 : "Live readings aren't available right now, but every city's page is below. "}
-              Live weather, 5-day forecasts and air quality for {CITIES.length} cities, from the Arabian Sea to the
-              Karakoram.
+              Forecasts and air quality for {CITIES.length} places across Pakistan.
             </p>
             {latest > 0 && (
               <p className="nation-time">
@@ -172,7 +167,7 @@ export function Nation({
 
       <section className="section" aria-labelledby="seasons-title">
         <h2 id="seasons-title">Pakistan&apos;s seasons</h2>
-        <dl className="faq">
+        <dl className="facts-list">
           {SEASONS.map((season) => (
             <div key={season.name}>
               <dt>
@@ -183,8 +178,6 @@ export function Nation({
           ))}
         </dl>
       </section>
-
-      <Faqs faqs={faqs} title="Pakistan weather right now" />
     </>
   );
 }

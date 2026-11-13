@@ -1,5 +1,5 @@
 import { conditionLabel } from "@/lib/conditions";
-import { formatPercent, formatTemp, tempColor, temperature } from "@/lib/format";
+import { formatPercent, formatTemp, tempColor } from "@/lib/format";
 import { dayLabel, formatHour, localDay } from "@/lib/time";
 import type { DaySummary, HourSlot, Units } from "@/lib/types";
 
@@ -100,9 +100,6 @@ export function Daily({
           );
         })}
       </ul>
-      <p className="panel-note">
-        Bars share one scale from {temperature(low, units)}° to {temperature(high, units)}°.
-      </p>
     </section>
   );
 }

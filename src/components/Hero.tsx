@@ -1,5 +1,6 @@
 import { conditionLabel } from "@/lib/conditions";
 import { formatTemp } from "@/lib/format";
+import { outlook } from "@/lib/outlook";
 import { placeRegion } from "@/lib/query";
 import { formatClock, formatLongDate, formatOffset } from "@/lib/time";
 import type { Snapshot, Units } from "@/lib/types";
@@ -49,6 +50,14 @@ export function Hero({ snapshot, units, nameUr }: { snapshot: Snapshot; units: U
           </p>
         </div>
       </div>
+
+      <ul className="hero-outlook" aria-label="Outlook">
+        {outlook(snapshot).map((line) => (
+          <li key={line.kind} className={`outlook-${line.kind}`}>
+            {line.text}
+          </li>
+        ))}
+      </ul>
     </section>
   );
 }

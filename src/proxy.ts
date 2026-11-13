@@ -3,6 +3,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { measurementId } from "@/lib/analytics";
 import { FORMER_CITIES, cityBySlug, cityPath, findCity, provinceBySlug } from "@/lib/cities";
 import { buildCsp } from "@/lib/csp";
+import { UNITS_COOKIE, UNITS_MAX_AGE } from "@/lib/units";
 
 /**
  * A fresh nonce per request for a strict Content Security Policy: only scripts and
@@ -11,6 +12,23 @@ import { buildCsp } from "@/lib/csp";
  */
 export function proxy(request: NextRequest) {
   const { pathname, searchParams } = request.nextUrl;
+
+  // Typed or old links with capitals ("/weather/Lahore") go to the real page.
+  if (/^\/(weather|pakistan)\//i.test(pathname) && pathname !== pathname.toLowerCase()) {
+    const target = request.nextUrl.clone();
+    target.pathname = pathname.toLowerCase();
+    return NextResponse.redirect(target, 308);
+  }
+
+  // °C is the default, so choosing it clears the saved choice and drops the parameter.
+  const unitsParam = searchParams.get("units");
+  if (unitsParam === "metric") {
+    const target = request.nextUrl.clone();
+    target.searchParams.delete("units");
+    const response = NextResponse.redirect(target);
+    response.cookies.delete(UNITS_COOKIE);
+    return response;
+  }
 
   // Unknown city and province pages get a real 404 status before any HTML is streamed.
   const city = /^\/weather\/([^/]+)\/?$/.exec(pathname);
@@ -49,7 +67,24 @@ export function proxy(request: NextRequest) {
   requestHeaders.set("x-nonce", nonce);
   requestHeaders.set("Content-Security-Policy", csp);
 
-  const response = NextResponse.next({ request: { headers: requestHeaders } });
+  // Someone who picked °F keeps it on their next visit: the page reads it from the URL as usual.
+  const remembered = !unitsParam && request.cookies.get(UNITS_COOKIE)?.value === "imperial";
+  let response: NextResponse;
+  if (remembered) {
+    const target = request.nextUrl.clone();
+    target.searchParams.set("units", "imperial");
+    response = NextResponse.rewrite(target, { request: { headers: requestHeaders } });
+  } else {
+    response = NextResponse.next({ request: { headers: requestHeaders } });
+  }
+  if (unitsParam === "imperial") {
+    response.cookies.set(UNITS_COOKIE, "imperial", {
+      path: "/",
+      maxAge: UNITS_MAX_AGE,
+      sameSite: "lax",
+      secure: request.nextUrl.protocol === "https:",
+    });
+  }
   response.headers.set("Content-Security-Policy", csp);
   // Built from the visitor's own IP address, so no shared cache may keep a copy.
   if (pathname === "/my-location") response.headers.set("Cache-Control", "private, no-store, max-age=0");

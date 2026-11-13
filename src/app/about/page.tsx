@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { connection } from "next/server";
 
 import { Breadcrumbs, Shell } from "@/components/Shell";
@@ -13,7 +12,7 @@ const PATH = "/about";
 const DESCRIPTION =
   "How Skycast works: where its Pakistan weather, air quality and climate data come from, how often it updates, and what its limits are.";
 
-export const metadata: Metadata = pageMeta({ title: `About and Data Sources · ${SITE_NAME}`, description: DESCRIPTION, path: PATH });
+export const metadata: Metadata = pageMeta({ title: `About and Data Sources · ${SITE_NAME}`, description: DESCRIPTION, path: PATH, siteImage: true });
 
 export default async function AboutPage() {
   await connection(); // Rendered per request: a prerendered page can't carry the CSP nonce.
@@ -41,7 +40,7 @@ export default async function AboutPage() {
 
         <section className="section" aria-labelledby="sources-title">
           <h2 id="sources-title">Where the data comes from</h2>
-          <dl className="faq">
+          <dl className="facts-list">
             <div>
               <dt>Current weather and forecasts</dt>
               <dd>
@@ -65,7 +64,7 @@ export default async function AboutPage() {
             </div>
             <div>
               <dt>City notes</dt>
-              <dd>Written by hand for each place, to explain what makes its weather different.</dd>
+              <dd>Written by hand for each place.</dd>
             </div>
           </dl>
         </section>
@@ -95,23 +94,34 @@ export default async function AboutPage() {
           </p>
         </section>
 
+        <section className="section" aria-labelledby="privacy-title">
+          <h2 id="privacy-title">Privacy</h2>
+          <ul className="prose prose-list">
+            <li>No ads and no accounts.</li>
+            <li>
+              “Weather at my location” uses the approximate place your IP address points to. Vercel, the host, looks
+              this up for every request. Skycast doesn&apos;t store it.
+            </li>
+            <li>Only coordinates rounded to about 1 km are sent to OpenWeather to get a forecast.</li>
+            <li>Two cookies remember your theme and °C or °F choice, if you change them.</li>
+            {measurementId() !== null && (
+              <li>Visits are counted with Google Analytics. Your IP address and location are never sent to it.</li>
+            )}
+          </ul>
+        </section>
+
         <section className="section" aria-labelledby="who-title">
-          <h2 id="who-title">Who built it</h2>
+          <h2 id="who-title">Who made it</h2>
           <p className="prose">
             Skycast is built and maintained by{" "}
             <a href={AUTHOR.url} rel="noopener">
               {AUTHOR.name}
             </a>
-            . It&apos;s a Next.js and TypeScript project with end-to-end tests and a strict Content Security Policy. The{" "}
+            . The{" "}
             <a href={SOURCE_URL} rel="noopener">
               source code
             </a>{" "}
-            is open. {SITE_NAME} has no ads and no accounts. “Weather at my location” uses the approximate place
-            that Vercel, the host, already looks up from your IP address for every request. It isn&apos;t stored or sent
-            to anyone else; only coordinates rounded to about 1 km go to OpenWeather for the forecast. The same rounding
-            applies when you share your exact location. If you pick a light or dark theme, a cookie remembers it.
-            {measurementId() !== null && " Visits are counted with Google Analytics."}{" "}
-            <Link prefetch={false} href="/">See today&apos;s weather</Link>.
+            is on GitHub.
           </p>
         </section>
       </Shell>

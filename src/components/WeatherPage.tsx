@@ -21,6 +21,7 @@ export function WeatherPage({
   keep,
   nameUr,
   crumbs,
+  region,
   children,
 }: {
   outcome: Outcome;
@@ -31,6 +32,8 @@ export function WeatherPage({
   keep?: URLSearchParams;
   /** The place's name in Urdu, for places we know it. */
   nameUr?: string;
+  /** The region link to mark as current in the header. */
+  region?: string;
   /** Shown at the top of the sky. */
   crumbs?: ReactNode;
   /** What follows the forecast. */
@@ -47,7 +50,7 @@ export function WeatherPage({
       : "clouds";
 
   return (
-    <Shell sky={sky} units={units} unitPath={basePath} keep={keep}>
+    <Shell sky={sky} units={units} unitPath={basePath} keep={keep} region={region}>
       <div className="sky">
         {crumbs}
         {outcome.kind === "ok" ? (

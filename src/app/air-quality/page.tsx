@@ -41,7 +41,7 @@ export default async function AirQualityPage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: jsonLd(simplePageSchema(PATH, "Pakistan air quality", DESCRIPTION)) }}
       />
-      <Shell sky={nationSky(nation)}>
+      <Shell sky={nationSky(nation)} region="air-quality">
         <div className="sky sky-flush">
           <Breadcrumbs
             trail={[
@@ -70,10 +70,17 @@ export default async function AirQualityPage() {
               <table className="climate-table aqi-table">
                 <thead>
                   <tr>
-                    <th scope="col">Rank</th>
+                    <th scope="col">
+                      <span className="long-label">Rank</span>
+                      <span className="short-label" aria-hidden="true">
+                        #
+                      </span>
+                    </th>
                     <th scope="col">City</th>
                     <th scope="col">US AQI</th>
-                    <th scope="col">PM2.5 (µg/m³)</th>
+                    <th scope="col">
+                      PM2.5 <span className="long-label">(µg/m³)</span>
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
@@ -89,7 +96,7 @@ export default async function AirQualityPage() {
                           <span className="aqi-label">
                             <span className={`aqi aqi-${band.level}`} aria-hidden="true" />
                             <span className="aqi-value">{aqi}</span>
-                            <span>{band.label}</span>
+                            <span className="aqi-band">{band.label}</span>
                           </span>
                         </td>
                         <td>{Math.round(pm25)}</td>

@@ -3,6 +3,8 @@ import type { Metadata } from "next";
 import { cityPath, provinceBySlug, provincePath, type City, type Province } from "./cities";
 import { AUTHOR, SITE_DESCRIPTION, SITE_NAME, SOURCE_URL, siteUrl } from "./site";
 
+const DEFAULT_IMAGE = { url: "/opengraph-image", width: 1200, height: 630, alt: `${SITE_NAME}: Pakistan weather` };
+
 /**
  * Everything a page needs for search and sharing, set together. Next.js replaces `openGraph`
  * and `twitter` as whole objects, so setting only part of them would lose the rest.
@@ -12,20 +14,25 @@ export function pageMeta({
   description,
   path,
   noindex = false,
+  siteImage = false,
 }: {
   /** The full title, brand included. */
   title: string;
   description: string;
   path: string;
   noindex?: boolean;
+  /** For pages without an opengraph-image file of their own: use the site-wide card. */
+  siteImage?: boolean;
 }): Metadata {
+  const images = siteImage ? [DEFAULT_IMAGE] : undefined;
   return {
     title: { absolute: title },
     description,
     alternates: { canonical: path },
     robots: noindex ? { index: false, follow: true } : undefined,
-    openGraph: { type: "website", siteName: SITE_NAME, locale: "en_PK", title, description, url: path },
-    twitter: { card: "summary_large_image", title, description },
+    // Setting `images` at all, even to undefined, would hide a route's own opengraph-image file.
+    openGraph: { type: "website", siteName: SITE_NAME, locale: "en_PK", title, description, url: path, ...(images && { images }) },
+    twitter: { card: "summary_large_image", title, description, ...(images && { images: images.map((image) => image.url) }) },
   };
 }
 

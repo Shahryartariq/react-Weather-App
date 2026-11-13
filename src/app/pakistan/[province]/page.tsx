@@ -48,7 +48,7 @@ export default async function ProvincePage({ params, searchParams }: PageProps<"
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: jsonLd(provinceSchema(province, describe(province))) }}
       />
-      <Shell sky={nationSky(nation)} units={units} unitPath={provincePath(province)}>
+      <Shell sky={nationSky(nation)} units={units} unitPath={provincePath(province)} region={province.slug}>
         <div className="sky sky-flush">
           <Breadcrumbs trail={provinceTrail(province)} />
           <section className="simple-hero" aria-labelledby="province-title">

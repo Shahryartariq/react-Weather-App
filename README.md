@@ -14,7 +14,7 @@ A fast, free, ad-free weather site for Pakistan. It covers 50 cities, hill stati
 
 | Lighthouse | Performance | Accessibility | Best practices | SEO |
 |---|---|---|---|---|
-| Mobile | 96–98 | 100 | 100 | 100 |
+| Mobile | 94–99 | 100 | 100 | 100 |
 | Desktop | 100 | 100 | 100 | 100 |
 
 Measured on the home, city, province and air quality pages of a local production build, with no layout shift on any of them.
@@ -34,10 +34,10 @@ Measured on the home, city, province and air quality pages of a local production
 - **50 city pages** with the next 24 hours, a 5-day forecast, wind, humidity, sunrise and sunset, and AQI.
 - **Climate tables** for every city: monthly highs, lows and rain, the most comfortable months and the wettest.
 - **Six province pages** and a **live air quality ranking** of every city, with health guidance for each level.
-- **Questions answered from live data**, like "Will it rain in Lahore this week?"
-- **Search anywhere in the world**, with keyboard-friendly suggestions. Recent places are remembered on your device.
+- **The outlook at a glance**: every forecast says when rain is most likely ("Rain likely on Sunday, 82%") and flags unhealthy air.
+- **Search anywhere in the world**, with keyboard-friendly suggestions. The big cities are offered before you type, and recent places are remembered on your device.
 - **Weather at my location, no typing**: [/my-location](https://getskycast.vercel.app/my-location) shows your IP address, your approximate place and its forecast, with no permission prompt. One tap switches to your exact location instead.
-- °C or °F, and times in the place's own time zone.
+- °C or °F, remembered for your next visit, and times in the place's own time zone.
 - **Dark mode**: follows your device by default, or pick light or dark. The choice is remembered, with no flash on load, and open tabs stay in step.
 - **Works without JavaScript**: pages render on the server, search falls back to a normal form, and the theme follows your device.
 - **Installable** on a phone's home screen.
@@ -85,7 +85,7 @@ scripts/build-climate.ts ──▶ Open-Meteo ──▶ src/lib/data/climate.jso
 
 ## Decisions worth a look
 
-**Hiding data that's wrong.** ERA5 is a model on a coarse grid, and in deep valleys it blends in the surrounding peaks. It gave Gilgit about 1,400 mm of rain a year, while weather stations in Gilgit-Baltistan measure roughly 150 to 500 mm. I compared every city against what's known, then hid rainfall for the 10 places where it can't be trusted and said why on the page. Tests make sure those figures can't reappear in the generated questions either.
+**Hiding data that's wrong.** ERA5 is a model on a coarse grid, and in deep valleys it blends in the surrounding peaks. It gave Gilgit about 1,400 mm of rain a year, while weather stations in Gilgit-Baltistan measure roughly 150 to 500 mm. I compared every city against what's known, then hid rainfall for the 10 places where it can't be trusted and said why on the page.
 
 **A canonical URL bug you can't see.** Vercel's `VERCEL_PROJECT_PRODUCTION_URL` resolved to an auto-generated alias that returned 404, so every canonical link and the sitemap told Google the real pages lived at a dead address. Everything looked fine in a browser. The domain is now set explicitly, and tests pin it.
 
@@ -99,7 +99,9 @@ scripts/build-climate.ts ──▶ Open-Meteo ──▶ src/lib/data/climate.jso
 
 **"My location" without a lookup service or a prompt.** Vercel's edge already looks up every visitor's IP and adds the city and coordinates as request headers (overwriting anything the browser sends), so `/my-location` reads them on the server and needs no third-party IP API, no API key and no browser permission. Only coordinates rounded to about 1 km reach OpenWeather. The page is per visitor, so it's sent with `Cache-Control: private, no-store`. IP locations can be tens of kilometres off, and some Pakistani mobile networks route through Islamabad or Karachi, so the page says so and offers the exact location one tap away.
 
-**No FAQ schema, on purpose.** Google stopped showing FAQ rich results in May 2026, so the questions are plain visible content for readers rather than markup that does nothing.
+**Cutting copy that only repeated the numbers.** Pages used to end with question-and-answer blocks ("What is the temperature in Lahore right now? It's 23°C…") written for search engines. Every answer repeated a figure already on the page, so they went. The one thing they added, when rain is coming, is now a single line under the temperature. Notes that said nothing ("Above average sea-level pressure") went too; a note only appears when it tells you something, like haze cutting visibility.
+
+**°F that sticks, without a redirect.** Choosing °F sets a cookie, and the proxy quietly rewrites later requests to the °F view, so a clean address still shows your choice. The °C link clears the cookie in the browser and goes to the clean address. Without JavaScript it carries `?units=metric`, which the proxy turns into a redirect that clears the cookie. Pages are never stored in a shared cache, so a cookie-dependent page is safe.
 
 ## SEO
 
@@ -167,6 +169,7 @@ WEATHER_SAMPLE_DATA=1 npm run dev
 | `npm run test:e2e` | End-to-end and accessibility tests with Playwright, against the production build and sample data |
 | `npm run climate` | Rebuild the climate data from Open-Meteo. Needs Node.js 22.18 or newer; run it about once a year. |
 | `npm run map` | Rebuild the map outline from Natural Earth. Needs Node.js 22.18 or newer. |
+| `npm run font` | Rebuild the brand font, cut to the weights and characters the site uses. Needs `pip install fonttools brotli`. |
 
 Before running `npm run test:e2e` the first time, install the browser with `npx playwright install chromium`.
 
@@ -187,17 +190,18 @@ src/
     cities.ts                The 50 places: coordinates, Urdu names, aliases, search
     guides.ts                Hand-written notes on each place
     climate.ts, data/        Monthly climate data and summaries
-    faq.ts                   Questions answered from live data
+    outlook.ts               The rain and air-quality line under each forecast
     seo.ts                   Page metadata and structured data
     csp.ts, analytics.ts     Security policy; optional Google Analytics
-    theme.ts                 Theme names and the cookie that remembers the choice
+    theme.ts, units.ts       Cookies that remember the theme and °F
     openweather.ts           Server-only API client (key, caching, retries, sample data)
     load.ts                  Loading and error handling shared by the pages
     forecast.ts              Raw API data → Snapshot
     conditions.ts            Weather codes, labels and sky colours
     format.ts, time.ts       Units, US AQI, conversions and time zones
     query.ts, site.ts        URLs and the canonical address
-  proxy.ts                   Content Security Policy with nonces; 404s and redirects
+  fonts/                     The brand font, subset (OFL)
+  proxy.ts                   Content Security Policy with nonces; 404s, redirects and the °F cookie
 scripts/                     Builds climate data and the map outline; checks coordinates against a geocoder
 e2e/                         Playwright tests
 ```

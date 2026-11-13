@@ -230,7 +230,7 @@ main:focus {
 .regions ul {
   display: flex;
   flex-wrap: wrap;
-  gap: 2px 18px;
+  gap: 0 20px;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -239,8 +239,14 @@ main:focus {
 
 .regions a {
   display: inline-block;
-  padding: 3px 0;
+  padding: 8px 0;
   text-decoration-color: rgb(255 255 255 / 40%);
+}
+
+.regions a[aria-current="page"] {
+  font-weight: 650;
+  text-decoration-color: #fff;
+  text-decoration-thickness: 2px;
 }
 
 .regions a:hover {
@@ -254,8 +260,14 @@ main:focus {
 /* Breadcrumb */
 
 .crumbs {
-  padding-top: 18px;
+  padding-top: 16px;
   font-size: 0.9rem;
+}
+
+.crumbs a,
+.crumbs [aria-current] {
+  display: inline-block;
+  padding: 4px 0;
 }
 
 .crumbs ol {
@@ -274,7 +286,7 @@ main:focus {
 }
 
 .crumbs + .hero {
-  padding-top: 22px;
+  padding-top: 20px;
 }
 
 /* Urdu reads right to left, but sits on the left edge with the English around it. */
@@ -752,6 +764,28 @@ a.icon-button {
   opacity: 0.94;
 }
 
+.hero-outlook {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: -6px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.hero-outlook li {
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 14%);
+  font-size: 0.94rem;
+  font-weight: 500;
+}
+
+.hero-outlook .outlook-air {
+  background: rgb(255 255 255 / 22%);
+  font-weight: 600;
+}
+
 .wx-icon {
   flex: none;
   --icon-fill: var(--surface);
@@ -868,7 +902,7 @@ a.icon-button {
 }
 
 .panel {
-  padding: 22px 24px 18px;
+  padding: 24px 26px 20px;
   border: 1px solid var(--line);
   border-radius: var(--radius);
   background: var(--surface);
@@ -876,7 +910,7 @@ a.icon-button {
 }
 
 .panel h2 {
-  margin-bottom: 8px;
+  margin-bottom: 10px;
   font-size: 1.05rem;
   font-weight: 650;
   letter-spacing: -0.01em;
@@ -958,7 +992,7 @@ a.icon-button {
 }
 
 .details dl > div {
-  padding: 14px 0;
+  padding: 16px 0;
   border-top: 1px solid var(--line);
 }
 
@@ -1091,19 +1125,19 @@ a.icon-button {
 
 .section {
   max-width: calc(var(--wrap) + 40px);
-  margin: 56px auto 0;
+  margin: 80px auto 0;
   padding: 0 20px;
 }
 
 .section h2 {
-  margin-bottom: 14px;
-  font-size: 1.35rem;
+  margin-bottom: 20px;
+  font-size: 1.45rem;
   font-weight: 650;
   letter-spacing: -0.015em;
 }
 
 .section h3 {
-  margin: 28px 0 10px;
+  margin: 40px 0 14px;
   font-size: 1.05rem;
   font-weight: 650;
 }
@@ -1111,11 +1145,20 @@ a.icon-button {
 .prose {
   max-width: 68ch;
   font-size: 1.04rem;
-  line-height: 1.6;
+  line-height: 1.65;
 }
 
 .prose + .prose {
-  margin-top: 12px;
+  margin-top: 16px;
+}
+
+.prose-list {
+  margin: 0;
+  padding-left: 1.2em;
+}
+
+.prose-list li + li {
+  margin-top: 10px;
 }
 
 .prose a,
@@ -1125,14 +1168,14 @@ a.icon-button {
 }
 
 .section-more {
-  margin-top: 14px;
+  margin-top: 20px;
   font-weight: 600;
 }
 
 .city-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(168px, 1fr));
-  gap: 12px;
+  gap: 14px;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -1145,9 +1188,9 @@ a.icon-button {
     "name icon"
     "region temp";
   align-items: center;
-  gap: 2px 10px;
+  gap: 4px 10px;
   height: 100%;
-  padding: 14px 16px;
+  padding: 16px 18px;
   border: 1px solid var(--line);
   border-radius: 14px;
   background: var(--surface);
@@ -1189,8 +1232,8 @@ a.icon-button {
 .facts {
   display: flex;
   flex-wrap: wrap;
-  gap: 14px 36px;
-  margin: 20px 0 0;
+  gap: 18px 40px;
+  margin: 28px 0 0;
   padding: 0;
   list-style: none;
   font-weight: 600;
@@ -1220,7 +1263,7 @@ a.icon-button {
 
 .climate-table th,
 .climate-table td {
-  padding: 9px 16px;
+  padding: 11px 16px;
   border-top: 1px solid var(--line);
   text-align: right;
   white-space: nowrap;
@@ -1256,39 +1299,44 @@ a.icon-button {
   width: 100%;
 }
 
-/* Questions */
+/* Short titled notes, two to a row */
 
-.faq {
+.facts-list {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 22px 40px;
+  gap: 28px 48px;
   margin: 0;
 }
 
-.faq dt {
+.facts-list dt {
   font-weight: 620;
 }
 
-.faq dd {
-  margin: 4px 0 0;
+.facts-list dd {
+  margin: 6px 0 0;
   color: var(--muted);
-  line-height: 1.55;
+  line-height: 1.6;
+}
+
+/* Long and short versions of a label: the short one on narrow screens. */
+.short-label {
+  display: none;
 }
 
 /* Province groups on the home page */
 
 .provinces {
   columns: 300px;
-  column-gap: 16px;
+  column-gap: 20px;
 }
 
 .province-card {
-  margin-bottom: 16px;
+  margin-bottom: 20px;
   break-inside: avoid;
 }
 
 .province-card h3 {
-  margin: 0 0 6px;
+  margin: 0 0 8px;
 }
 
 .province-card h3 a {
@@ -1305,7 +1353,7 @@ a.icon-button {
   display: flex;
   justify-content: space-between;
   gap: 12px;
-  padding: 6px 0;
+  padding: 9px 0;
   border-top: 1px solid var(--line);
   text-decoration: none;
   font-variant-numeric: tabular-nums;
@@ -1321,8 +1369,8 @@ a.icon-button {
   display: grid;
   grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
   align-items: center;
-  gap: 24px 48px;
-  padding: 36px 0 12px;
+  gap: 32px 56px;
+  padding: 44px 0 16px;
 }
 
 .nation h1,
@@ -1490,6 +1538,8 @@ a.icon-button {
 }
 
 .aqi-table a {
+  display: inline-block;
+  padding: 4px 0;
   text-underline-offset: 0.2em;
 }
 
@@ -1532,8 +1582,8 @@ a.icon-button {
 
 .footer {
   max-width: calc(var(--wrap) + 40px);
-  margin: 64px auto 0;
-  padding: 28px 20px 40px;
+  margin: 96px auto 0;
+  padding: 36px 20px 48px;
   border-top: 1px solid var(--line);
   color: var(--muted);
   font-size: 0.9rem;
@@ -1542,6 +1592,11 @@ a.icon-button {
 .footer a {
   color: var(--ink);
   text-decoration-color: var(--line);
+}
+
+.footer li a {
+  display: inline-block;
+  padding: 5px 0;
 }
 
 .footer a:hover {
@@ -1563,7 +1618,7 @@ a.icon-button {
 
 .footer ul {
   display: grid;
-  gap: 6px;
+  gap: 0;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -1571,9 +1626,10 @@ a.icon-button {
 
 .footer-credits {
   display: grid;
-  gap: 6px;
-  margin-top: 28px;
-  padding-top: 18px;
+  gap: 8px;
+  margin-top: 32px;
+  padding-top: 24px;
+  line-height: 1.6;
   border-top: 1px solid var(--line);
 }
 
@@ -1610,27 +1666,105 @@ a.icon-button {
     padding-bottom: 4px;
   }
 
+  /* One scrolling row of region links instead of two wrapped rows. */
+  .regions ul {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+    margin-right: -20px;
+    padding-right: 20px;
+    white-space: nowrap;
+  }
+
+  .regions ul::-webkit-scrollbar {
+    display: none;
+  }
+
   .section {
-    margin-top: 44px;
-    padding: 0 12px;
+    margin-top: 64px;
+    padding: 0 16px;
+  }
+
+  .section h2 {
+    font-size: 1.3rem;
   }
 
   .city-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 8px;
+    gap: 10px;
   }
 
-  .faq {
+  .city-grid a {
+    padding: 14px;
+  }
+
+  .facts-list {
     grid-template-columns: minmax(0, 1fr);
+    gap: 22px;
+  }
+
+  /* City names and temperatures are short: two columns halve the length of each province. */
+  .province-card ul {
+    columns: 2;
+    column-gap: 20px;
+  }
+
+  .province-card li {
+    break-inside: avoid;
+  }
+
+  .short-label {
+    display: inline;
+  }
+
+  .long-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+
+  /* The level's name goes under the number, so the table fits without scrolling. */
+  .aqi-label {
+    flex-wrap: wrap;
+    gap: 2px 8px;
+  }
+
+  .aqi-band {
+    flex-basis: 100%;
+    padding-left: 18px;
+    color: var(--muted);
+    font-size: 0.82rem;
+    white-space: normal;
+  }
+
+  .footer {
+    margin-top: 72px;
+    padding-inline: 16px;
   }
 
   .footer-links {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  /* Positioned, so the hidden long labels stay inside the table's scroll box. */
   .climate-table th,
   .climate-table td {
-    padding: 8px 10px;
+    position: relative;
+    padding: 10px 10px;
+  }
+
+  .aqi-table td:nth-child(3) {
+    min-width: 7rem;
+    white-space: normal;
+  }
+
+  .aqi-table th,
+  .aqi-table td {
+    padding-inline: 8px;
   }
 
   /* The numbers matter more than the bars on a narrow screen. */
@@ -1689,12 +1823,12 @@ a.icon-button {
   }
 
   .almanac {
-    padding: 0 12px;
-    gap: 12px;
+    padding: 0 16px;
+    gap: 16px;
   }
 
   .panel {
-    padding: 18px 16px 14px;
+    padding: 20px 18px 16px;
   }
 
   .daily li {
@@ -1702,13 +1836,17 @@ a.icon-button {
     gap: 7px;
   }
 
-  .details dl {
-    grid-template-columns: minmax(0, 1fr);
+  /* Two columns stay: each reading is short, and one column made the panel very long. */
+  .details dl > div:nth-child(odd) {
+    padding-right: 14px;
   }
 
-  .details dl > div:nth-child(n) {
-    padding: 14px 0;
-    border-left: 0;
+  .details dl > div:nth-child(even) {
+    padding-left: 14px;
+  }
+
+  .detail-value {
+    font-size: 1.35rem;
   }
 
   .details .detail-sun {
@@ -1718,6 +1856,19 @@ a.icon-button {
 
 /* Small phones: the brand and theme switch still share one row. */
 @media (max-width: 360px) {
+  .almanac {
+    padding: 0 12px;
+  }
+
+  .panel {
+    padding: 18px 14px 14px;
+  }
+
+  .daily li {
+    grid-template-columns: 4.9rem 1.6rem 2rem 2rem minmax(24px, 1fr) 2rem;
+    gap: 5px;
+  }
+
   .brand {
     gap: 7px;
     font-size: 1.05rem;

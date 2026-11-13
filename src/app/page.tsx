@@ -6,7 +6,6 @@ import { Shell } from "@/components/Shell";
 import { WeatherPage } from "@/components/WeatherPage";
 import { CITIES, MAJOR } from "@/lib/cities";
 import { conditionLabel } from "@/lib/conditions";
-import { nationFaqs } from "@/lib/faq";
 import { formatTemp } from "@/lib/format";
 import { loadFromQuery, loadNation, loadNationAir, loadNow, nationSky } from "@/lib/load";
 import { parseLocation, parseUnits, placeLabel } from "@/lib/query";
@@ -73,7 +72,7 @@ export default async function Home({ searchParams }: PageProps<"/">) {
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(homeSchema()) }} />
       <Shell sky={nationSky(nation)} units={units} unitPath="/">
-        <Nation now={nation} air={air} faqs={nationFaqs(nation, air, units)} units={units} />
+        <Nation now={nation} air={air} units={units} />
       </Shell>
     </>
   );

@@ -1,15 +1,20 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 
-import { measurementId } from "@/lib/analytics";
-import { CITIES, HILL_STATIONS, MAJOR, PROVINCES, cityBySlug, cityPath, provincePath } from "@/lib/cities";
+import { HILL_STATIONS, MAJOR, PROVINCES, cityBySlug, cityPath, provincePath } from "@/lib/cities";
 import { usingSampleData } from "@/lib/openweather";
 import { AUTHOR, SOURCE_URL } from "@/lib/site";
-import type { Sky, Units } from "@/lib/types";
+import type { Place, Sky, Units } from "@/lib/types";
 
 import { SearchBox } from "./SearchBox";
 import { ThemeSwitch } from "./ThemeSwitch";
 import { UnitSwitch } from "./UnitSwitch";
+
+/** Offered in the search box before someone has searched for anything. */
+const POPULAR: Place[] = MAJOR.slice(0, 6).map((slug) => {
+  const { name, region, country, lat, lon } = cityBySlug(slug)!;
+  return { name, region, country, lat, lon };
+});
 
 const SHORT_NAMES: Record<string, string> = { "khyber-pakhtunkhwa": "KP", "gilgit-baltistan": "Gilgit-Baltistan" };
 
@@ -25,9 +30,12 @@ export function Shell({
   units = "metric",
   unitPath,
   keep,
+  region,
   children,
 }: {
   sky: Sky;
+  /** The region link to mark as current: a province slug, or "air-quality". */
+  region?: string;
   units?: Units;
   /** Path the °C/°F links point at. Pages without temperatures leave it out. */
   unitPath?: string;
@@ -39,7 +47,7 @@ export function Shell({
   return (
     <div className="page" data-sky={sky}>
       <a className="skip-link" href="#main">
-        Skip to the forecast
+        Skip to content
       </a>
       <header className="topbar">
         <Link prefetch={false} href={`/${suffix}`} className="brand" aria-label="Skycast Pakistan home">
@@ -50,7 +58,7 @@ export function Shell({
           Skycast <span className="brand-tag">Pakistan</span>
         </Link>
         <div className="tools">
-          <SearchBox units={units} />
+          <SearchBox units={units} popular={POPULAR} />
           <Link prefetch={false} href={`/my-location${suffix}`} className="icon-button" title="Weather at my location">
             <svg viewBox="0 0 24 24" aria-hidden="true">
               <path d="M12 21.5s-6.5-6.2-6.5-11.5a6.5 6.5 0 0 1 13 0c0 5.3-6.5 11.5-6.5 11.5Z" />
@@ -66,11 +74,19 @@ export function Shell({
         <ul>
           {PROVINCES.map((province) => (
             <li key={province.slug}>
-              <Link prefetch={false} href={`${provincePath(province)}${suffix}`}>{SHORT_NAMES[province.slug] ?? province.name}</Link>
+              <Link
+                prefetch={false}
+                href={`${provincePath(province)}${suffix}`}
+                aria-current={region === province.slug ? "page" : undefined}
+              >
+                {SHORT_NAMES[province.slug] ?? province.name}
+              </Link>
             </li>
           ))}
           <li>
-            <Link prefetch={false} href="/air-quality">Air quality</Link>
+            <Link prefetch={false} href="/air-quality" aria-current={region === "air-quality" ? "page" : undefined}>
+              Air quality
+            </Link>
           </li>
         </ul>
       </nav>
@@ -144,7 +160,7 @@ function Footer({ units }: { units: Units }) {
       </div>
       <div className="footer-credits">
         <p>
-          Live weather and air quality from{" "}
+          Weather and air quality from{" "}
           <a href="https://openweathermap.org/" rel="noopener">
             OpenWeather
           </a>
@@ -156,11 +172,14 @@ function Footer({ units }: { units: Units }) {
           <a href="https://creativecommons.org/licenses/by/4.0/" rel="noopener">
             CC BY 4.0
           </a>
-          ). Map outline from{" "}
+          ). Map from{" "}
           <a href="https://www.naturalearthdata.com/" rel="noopener">
             Natural Earth
           </a>
-          . Covering {CITIES.length} places in Pakistan. In an emergency, follow the{" "}
+          .
+        </p>
+        <p>
+          For official warnings, follow the{" "}
           <a href="https://www.pmd.gov.pk/" rel="noopener">
             Pakistan Meteorological Department
           </a>{" "}
@@ -170,16 +189,12 @@ function Footer({ units }: { units: Units }) {
           </a>
           .
         </p>
-        {measurementId() !== null && (
-          <p>Visits are counted with Google Analytics. Your IP address and location are never sent to it.</p>
-        )}
         {usingSampleData() && <p className="sample-badge">Sample data: set OPENWEATHER_API_KEY for live weather.</p>}
         <p>
-          Built by{" "}
+          Made by{" "}
           <a href={AUTHOR.url} rel="noopener">
             {AUTHOR.name}
-          </a>{" "}
-          with Next.js and TypeScript.
+          </a>
         </p>
       </div>
     </footer>

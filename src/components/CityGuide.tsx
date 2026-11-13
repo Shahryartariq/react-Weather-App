@@ -3,7 +3,6 @@ import Link from "next/link";
 import type { City } from "@/lib/cities";
 import { provinceBySlug, provincePath } from "@/lib/cities";
 import { CLIMATE_PERIOD, MONTHS, climateOf, describeMonths, hasRainData, summarise, type Climate } from "@/lib/climate";
-import type { Faq } from "@/lib/faq";
 import { formatRain, formatTemp, formatTempUnit, tempColor } from "@/lib/format";
 import { CITY_GUIDES } from "@/lib/guides";
 import type { CityNow } from "@/lib/load";
@@ -44,7 +43,12 @@ function ClimateTable({ climate, showRain, month, units }: { climate: Climate; s
         <tbody>
           {climate.months.map((m, i) => (
             <tr key={MONTHS[i]} aria-current={i === month ? "true" : undefined}>
-              <th scope="row">{MONTHS[i]}</th>
+              <th scope="row">
+                <span className="long-label">{MONTHS[i]}</span>
+                <span className="short-label" aria-hidden="true">
+                  {MONTHS[i].slice(0, 3)}
+                </span>
+              </th>
               <td>{formatTemp(m.low, units)}</td>
               <td className="climate-bar-cell">
                 <RangeBar low={m.low} high={m.high} floor={floor} span={span} />
@@ -60,30 +64,12 @@ function ClimateTable({ climate, showRain, month, units }: { climate: Climate; s
   );
 }
 
-export function Faqs({ faqs, title }: { faqs: Faq[]; title: string }) {
-  if (faqs.length === 0) return null;
-  return (
-    <section className="section" aria-labelledby="faq-title">
-      <h2 id="faq-title">{title}</h2>
-      <dl className="faq">
-        {faqs.map(({ question, answer }) => (
-          <div key={question}>
-            <dt>{question}</dt>
-            <dd>{answer}</dd>
-          </div>
-        ))}
-      </dl>
-    </section>
-  );
-}
-
-/** The part of a city page that isn't today's forecast: its climate, questions and neighbours. */
+/** The part of a city page that isn't today's forecast: its climate and neighbours. */
 export function CityGuide({
   city,
   month,
   nearby,
   now,
-  faqs,
   units,
 }: {
   city: City;
@@ -91,7 +77,6 @@ export function CityGuide({
   month: number;
   nearby: City[];
   now: CityNow[];
-  faqs: Faq[];
   units: Units;
 }) {
   const climate = climateOf(city.slug);
@@ -145,8 +130,6 @@ export function CityGuide({
           </>
         )}
       </section>
-
-      <Faqs faqs={faqs} title={`${city.name} weather questions`} />
 
       <section className="section" aria-labelledby="nearby-title">
         <h2 id="nearby-title">Weather near {city.name}</h2>
