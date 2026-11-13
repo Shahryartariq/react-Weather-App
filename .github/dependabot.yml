@@ -1,0 +1,24 @@
+# Weekly update PRs, grouped so one PR covers the framework and one covers tooling.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      timezone: Asia/Karachi
+    open-pull-requests-limit: 5
+    groups:
+      framework:
+        patterns: ["next", "react", "react-dom", "@next/*", "eslint-config-next"]
+      tooling:
+        dependency-type: development
+        update-types: ["minor", "patch"]
+    ignore:
+      # Major versions change APIs; update them by hand.
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly

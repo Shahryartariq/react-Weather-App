@@ -12,11 +12,12 @@ import { THEME_COLORS, THEME_COOKIE, parseTheme } from "@/lib/theme";
 
 /**
  * Through next/font rather than a plain CSS import: it preloads the file and sizes the fallback
- * font to match, so long pages don't jump when the real font arrives.
+ * font to match, so long pages don't jump when the real font arrives. The file is cut down to
+ * the weights and characters the site uses (scripts/subset-font.sh), 8 KB less on every first visit.
  */
 const bricolage = localFont({
-  src: "../../node_modules/@fontsource-variable/bricolage-grotesque/files/bricolage-grotesque-latin-wght-normal.woff2",
-  weight: "200 800",
+  src: "../fonts/bricolage-grotesque.woff2",
+  weight: "280 700",
   variable: "--font-brand",
   display: "swap",
 });
