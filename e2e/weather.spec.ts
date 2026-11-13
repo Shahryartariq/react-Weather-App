@@ -136,7 +136,7 @@ test.describe("weather", () => {
     await expect(page.getByRole("heading", { name: "Islamabad climate" })).toBeVisible();
     await expect(page.locator(".climate-table tbody tr")).toHaveCount(12);
     await expect(page.locator('.climate-table tr[aria-current="true"]')).toHaveCount(1);
-    await expect(page.getByText("What is the hottest month in Islamabad?")).toBeVisible();
+    await expect(page.locator(".hero-outlook li").first()).toHaveText(/rain/i);
     await expect(page.locator(".city-grid a").first()).toHaveAttribute("href", "/weather/rawalpindi");
   });
 
@@ -185,10 +185,53 @@ test.describe("weather", () => {
     await expect(page.locator(".city-grid a").first()).toHaveAttribute("href", /units=imperial/);
   });
 
+  test("remembers °F on the next visit, and °C clears it", async ({ page, context }) => {
+    await page.goto("/weather/lahore?units=imperial");
+    expect((await context.cookies()).find((c) => c.name === "units")?.value).toBe("imperial");
+
+    // A clean address later still shows °F.
+    await page.goto("/weather/karachi");
+    await expect(page.getByRole("link", { name: "°F" })).toHaveAttribute("aria-current", "true");
+    await expect(page.getByText(/mph/).first()).toBeVisible();
+
+    await page.getByRole("link", { name: "°C" }).click();
+    await expect(page).toHaveURL(/\/weather\/karachi$/);
+    await expect(page.getByRole("link", { name: "°C" })).toHaveAttribute("aria-current", "true");
+    expect((await context.cookies()).find((c) => c.name === "units")).toBeUndefined();
+  });
+
+  test("shows the outlook: when rain is coming, and bad air", async ({ page }) => {
+    await page.goto("/weather/lahore");
+    const outlook = page.getByRole("list", { name: "Outlook" });
+    await expect(outlook.getByRole("listitem").first()).toHaveText(/^(Rain likely|Chance of rain|Slight chance of rain|No rain expected)/);
+  });
+
+  test("marks the current region in the header", async ({ page }) => {
+    await page.goto("/weather/karachi");
+    const regions = page.getByRole("navigation", { name: "Regions of Pakistan" });
+    await expect(regions.getByRole("link", { name: "Sindh" })).toHaveAttribute("aria-current", "page");
+    await expect(regions.getByRole("link", { name: "Punjab" })).not.toHaveAttribute("aria-current", "page");
+    await page.goto("/air-quality");
+    await expect(regions.getByRole("link", { name: "Air quality" })).toHaveAttribute("aria-current", "page");
+  });
+
+  test("the 404 page has search and city links", async ({ page }) => {
+    await page.goto("/weather/atlantis");
+    await expect(page.getByRole("heading", { level: 1, name: "Page not found" })).toBeVisible();
+    await expect(page.getByRole("combobox", { name: "Search for a city" })).toBeVisible();
+    await page.getByRole("main").getByRole("link", { name: "Lahore" }).click();
+    await expect(page).toHaveURL(/\/weather\/lahore$/);
+  });
+
   test("searches with suggestions and the keyboard", async ({ page }) => {
     await page.goto("/");
     const box = page.getByRole("combobox", { name: "Search for a city" });
     const options = page.getByRole("option");
+
+    // Before any search, the big cities are offered.
+    await box.focus();
+    await expect(page.getByText("Popular")).toBeVisible();
+    await expect(options.first()).toContainText("Karachi");
 
     // Cities we cover have their own page, and Hyderabad means the one in Sindh.
     await box.fill("Hyd");
@@ -267,7 +310,7 @@ test.describe("weather", () => {
     test.skip(isMobile, "Keyboard navigation is a desktop concern");
     await page.goto("/");
     await page.keyboard.press("Tab");
-    const skip = page.getByRole("link", { name: "Skip to the forecast" });
+    const skip = page.getByRole("link", { name: "Skip to content" });
     await expect(skip).toBeFocused();
     await skip.press("Enter");
     await expect(page).toHaveURL(/#main$/);
@@ -446,6 +489,21 @@ test.describe("SEO", () => {
       await expect(page.locator('meta[property="og:site_name"]'), path).toHaveAttribute("content", "Skycast");
       await expect(page.locator('meta[name="twitter:title"]'), path).toHaveAttribute("content", title);
     }
+  });
+
+  test("pages without a card of their own get the site's", async ({ page }) => {
+    for (const path of ["/about", "/my-location"]) {
+      await page.goto(path);
+      await expect(page.locator('meta[property="og:image"]'), path).toHaveAttribute("content", /\/opengraph-image$/);
+    }
+    await page.goto("/weather/lahore");
+    await expect(page.locator('meta[property="og:image"]')).toHaveAttribute("content", /\/weather\/lahore\/opengraph-image/);
+  });
+
+  test("addresses with capitals go to the real page", async ({ request }) => {
+    const response = await request.get("/weather/Lahore", { maxRedirects: 0 });
+    expect(response.status()).toBe(308);
+    expect(response.headers().location).toMatch(/\/weather\/lahore$/);
   });
 
   test("city pages describe the place in structured data", async ({ page }) => {

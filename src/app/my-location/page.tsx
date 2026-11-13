@@ -17,8 +17,9 @@ const PATH = "/my-location";
 export const metadata: Metadata = pageMeta({
   title: `Weather at My Location: Check Your IP and Local Forecast · ${SITE_NAME}`,
   description:
-    "See the weather where you are without typing a city. Skycast finds your approximate location from your IP address and shows the live forecast, hourly and 5-day, with air quality.",
+    "The weather where you are, without typing a city. Shows your IP address, your approximate location and its live forecast and air quality.",
   path: PATH,
+  siteImage: true,
 });
 
 /**

@@ -5,9 +5,7 @@ import { CityGuide } from "@/components/CityGuide";
 import { Breadcrumbs } from "@/components/Shell";
 import { WeatherPage } from "@/components/WeatherPage";
 import { cityBySlug, cityPath, nearbyCities, type City } from "@/lib/cities";
-import { climateOf } from "@/lib/climate";
 import { conditionLabel } from "@/lib/conditions";
-import { cityFaqs } from "@/lib/faq";
 import { formatTempUnit } from "@/lib/format";
 import { loadNow, loadPlace, type Outcome } from "@/lib/load";
 import { parseUnits, placeRegion } from "@/lib/query";
@@ -56,6 +54,7 @@ export default async function CityPage({ params, searchParams }: PageProps<"/wea
       <WeatherPage
         outcome={outcome}
         units={units}
+        region={city.province}
         basePath={cityPath(city)}
         nameUr={city.nameUr}
         crumbs={<Breadcrumbs trail={cityTrail(city)} />}
@@ -66,7 +65,6 @@ export default async function CityPage({ params, searchParams }: PageProps<"/wea
             month={new Date((outcome.snapshot.observedAt + outcome.snapshot.timezoneOffset) * 1000).getUTCMonth()}
             nearby={nearby}
             now={now}
-            faqs={cityFaqs(city, outcome.snapshot, climateOf(city.slug), units)}
             units={units}
           />
         )}

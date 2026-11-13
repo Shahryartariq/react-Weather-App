@@ -33,7 +33,7 @@ type Status = "idle" | "loading" | "done" | "error";
  * City search as an ARIA combobox. Works without JavaScript too: the form submits
  * `?q=` and the server looks the city up.
  */
-export function SearchBox({ units }: { units: Units }) {
+export function SearchBox({ units, popular = [] }: { units: Units; popular?: Place[] }) {
   const router = useRouter();
   const listId = useId();
   const [query, setQuery] = useState("");
@@ -46,7 +46,9 @@ export function SearchBox({ units }: { units: Units }) {
 
   const trimmed = query.trim();
   const showingRecent = trimmed.length < 2;
-  const options = showingRecent ? recent : results;
+  // Before anyone has searched, suggest the big cities instead of an empty box.
+  const suggestions = recent.length > 0 ? recent : popular;
+  const options = showingRecent ? suggestions : results;
 
   // Fetch suggestions as the reader types, debounced, cancelling stale requests.
   useEffect(() => {
@@ -157,8 +159,14 @@ export function SearchBox({ units }: { units: Units }) {
       </form>
 
       <div className={expanded ? "search-panel is-open" : "search-panel"}>
-        {showingRecent && options.length > 0 && <p className="search-heading">Recent</p>}
-        <ul id={listId} role="listbox" aria-label={showingRecent ? "Recent places" : "Matching places"}>
+        {showingRecent && options.length > 0 && (
+          <p className="search-heading">{recent.length > 0 ? "Recent" : "Popular"}</p>
+        )}
+        <ul
+          id={listId}
+          role="listbox"
+          aria-label={showingRecent ? (recent.length > 0 ? "Recent places" : "Popular places") : "Matching places"}
+        >
           {options.map((place, index) => (
             <li
               key={`${place.lat},${place.lon}`}
@@ -178,7 +186,7 @@ export function SearchBox({ units }: { units: Units }) {
           <p className="search-note">Searching…</p>
         )}
         {!showingRecent && status === "done" && options.length === 0 && (
-          <p className="search-note">No places match “{trimmed}”. Try adding the country, like “Paris, FR”.</p>
+          <p className="search-note">Nothing found for “{trimmed}”. Check the spelling, or add a country: “Paris, FR”.</p>
         )}
         {!showingRecent && status === "error" && (
           <p className="search-note">Search isn&apos;t working right now. Press Enter to try a full search.</p>

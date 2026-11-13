@@ -13,15 +13,24 @@ import {
 import { formatClock } from "@/lib/time";
 import type { Snapshot, Units } from "@/lib/types";
 
-function feelsLikeNote(actual: number, feels: number): string {
+/** Only worth a note when it really feels different from the thermometer. */
+function feelsLikeNote(actual: number, feels: number): string | null {
   const diff = feels - actual;
-  if (Math.abs(diff) < 1.5) return "About the same as the actual temperature.";
-  return diff < 0 ? "Wind makes it feel colder." : "Humidity makes it feel warmer.";
+  if (Math.abs(diff) < 1.5) return null;
+  return diff < 0 ? "Wind makes it feel colder" : "Humidity makes it feel warmer";
 }
 
 function humidityNote(dew: number, units: Units): string {
   const comfort = dew < 10 ? "Dry" : dew < 16 ? "Comfortable" : dew < 21 ? "A little muggy" : "Humid and sticky";
-  return `${comfort}. Dew point ${formatTemp(dew, units)}.`;
+  return `${comfort}, dew point ${formatTemp(dew, units)}`;
+}
+
+/** Below 10 km, say why: in Pakistan that's usually haze, smog or fog. */
+function visibilityNote(metres: number): string | null {
+  if (metres >= 10_000) return null;
+  if (metres >= 4_000) return "Some haze";
+  if (metres >= 1_000) return "Poor: haze, smog or rain";
+  return "Fog or thick smog";
 }
 
 /** Where the sun is between sunrise and sunset, drawn on a simple arc. */
@@ -64,6 +73,8 @@ export function Details({ snapshot, units }: { snapshot: Snapshot; units: Units 
   const daylightMinutes = Math.round((current.sunset - current.sunrise) / 60);
   const aqi = air && usAqi(air.pm25);
   const band = aqi === undefined ? undefined : aqiBand(aqi);
+  const feelsNote = feelsLikeNote(current.temp, current.feelsLike);
+  const visNote = visibilityNote(current.visibility);
 
   return (
     <section className="panel details" aria-labelledby="details-title">
@@ -72,7 +83,7 @@ export function Details({ snapshot, units }: { snapshot: Snapshot; units: Units 
         <div>
           <dt>Feels like</dt>
           <dd className="detail-value">{formatTemp(current.feelsLike, units)}</dd>
-          <dd className="detail-note">{feelsLikeNote(current.temp, current.feelsLike)}</dd>
+          {feelsNote && <dd className="detail-note">{feelsNote}</dd>}
         </div>
         <div>
           <dt>Wind</dt>
@@ -82,7 +93,7 @@ export function Details({ snapshot, units }: { snapshot: Snapshot; units: Units 
           </dd>
           <dd className="detail-note">
             From the {compass(current.windDeg)}
-            {current.windGust ? `, gusts to ${formatWind(current.windGust, units)}` : ""}.
+            {current.windGust ? `, gusts to ${formatWind(current.windGust, units)}` : ""}
           </dd>
         </div>
         <div>
@@ -99,23 +110,22 @@ export function Details({ snapshot, units }: { snapshot: Snapshot; units: Units 
                 AQI {aqi}
               </dd>
               <dd className="detail-note">
-                {band.label}. PM2.5 {Math.round(air.pm25)} µg/m³, estimated.{" "}
-                <Link prefetch={false} href="/air-quality">Compare cities</Link>
+                {band.label}, PM2.5 {Math.round(air.pm25)} µg/m³.{" "}
+                <Link prefetch={false} href="/air-quality">All cities</Link>
               </dd>
             </>
           ) : (
-            <dd className="detail-note">Not available for this place.</dd>
+            <dd className="detail-note">Not available here</dd>
           )}
         </div>
         <div>
           <dt>Pressure</dt>
           <dd className="detail-value">{formatPressure(current.pressure, units)}</dd>
-          <dd className="detail-note">{current.pressure >= 1013 ? "Above" : "Below"} average sea-level pressure.</dd>
         </div>
         <div>
           <dt>Visibility</dt>
           <dd className="detail-value">{formatVisibility(current.visibility, units)}</dd>
-          <dd className="detail-note">{current.visibility >= 10_000 ? "Clear view." : "Reduced by haze or rain."}</dd>
+          {visNote && <dd className="detail-note">{visNote}</dd>}
         </div>
         <div className="detail-sun">
           <dt>Sunrise and sunset</dt>
@@ -131,7 +141,7 @@ export function Details({ snapshot, units }: { snapshot: Snapshot; units: Units 
             </span>
           </dd>
           <dd className="detail-note">
-            {Math.floor(daylightMinutes / 60)} h {daylightMinutes % 60} min of daylight.
+            {Math.floor(daylightMinutes / 60)} h {daylightMinutes % 60} min of daylight
           </dd>
         </div>
       </dl>

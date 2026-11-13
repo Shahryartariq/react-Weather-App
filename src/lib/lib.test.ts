@@ -365,50 +365,29 @@ describe("climate", async () => {
   });
 });
 
-describe("questions", async () => {
+describe("outlook", async () => {
   const { cityBySlug } = await import("./cities");
-  const { climateOf } = await import("./climate");
-  const { cityFaqs, nationFaqs } = await import("./faq");
+  const { outlook } = await import("./outlook");
   const lahore = cityBySlug("lahore")!;
-  const gilgit = cityBySlug("gilgit")!;
   const snapshot = buildSnapshot(lahore, current, forecast, air);
+  const withPop = (pops: number[]) => ({ ...snapshot, daily: snapshot.daily.map((day, i) => ({ ...day, pop: pops[i] ?? 0 })) });
 
-  it("answers from the data on the page", () => {
-    const faqs = cityFaqs(lahore, snapshot, climateOf("lahore"), "metric");
-    expect(faqs[0].answer).toContain("24°C");
-    expect(faqs.map((f) => f.question)).toContain("What is the AQI in Lahore today?");
-    expect(faqs.map((f) => f.question)).toContain("Which month gets the most rain in Lahore?");
+  it("names the wettest day and how likely rain is", () => {
+    expect(outlook(withPop([0, 0.82]))[0]).toEqual({ kind: "rain", text: "Rain likely tomorrow (82%)" });
+    expect(outlook(withPop([0.4]))[0].text).toBe("Chance of rain today (40%)");
+    expect(outlook(withPop([0, 0, 0.25]))[0].text).toMatch(/^Slight chance of rain on [A-Z][a-z]+day \(25%\)$/);
   });
 
-  it("uses the reader's units", () => {
-    expect(cityFaqs(lahore, snapshot, undefined, "imperial")[0].answer).toContain("°F");
+  it("says so when it will stay dry", () => {
+    expect(outlook(withPop([0.1, 0.05]))[0]).toEqual({ kind: "dry", text: `No rain expected in the next ${snapshot.daily.length} days` });
   });
 
-  it("never quotes rainfall the model overstates", () => {
-    const faqs = cityFaqs(gilgit, { ...snapshot, place: gilgit }, climateOf("gilgit"), "metric");
-    expect(JSON.stringify(faqs)).not.toMatch(/wettest| mm/);
-  });
-
-  it("says so when no rain is expected", () => {
-    const dry = { ...snapshot, daily: snapshot.daily.map((day) => ({ ...day, pop: 0 })) };
-    expect(cityFaqs(lahore, dry, undefined, "metric")[1].answer).toMatch(/^No rain is expected/);
-  });
-
-  it("names the extremes for the whole country", () => {
-    const entry = (slug: string, temp: number, condition: "clear" | "rain") => ({
-      city: cityBySlug(slug)!,
-      temp,
-      condition,
-      isDay: true,
-      observedAt: 0,
-    });
-    const nation = [entry("jacobabad", 44, "clear"), entry("skardu", 3, "rain"), entry("lahore", 30, "clear")];
-    const faqs = nationFaqs(nation, [{ city: lahore, aqi: 180, pm25: 100 }], "metric");
-    expect(faqs[0].answer).toContain("Jacobabad");
-    expect(faqs[1].answer).toContain("Skardu");
-    expect(faqs[2].answer).toContain("Skardu");
-    expect(faqs[3].answer).toContain("Lahore");
-    expect(nationFaqs([], [], "metric")).toEqual([]);
+  it("only mentions the air once it's a problem", () => {
+    const clean = { ...snapshot, air: { ...snapshot.air!, pm25: 5 } };
+    const smoggy = { ...snapshot, air: { ...snapshot.air!, pm25: 100 } };
+    expect(outlook(clean).some((line) => line.kind === "air")).toBe(false);
+    expect(outlook(smoggy).find((line) => line.kind === "air")?.text).toBe("Unhealthy air (AQI 182)");
+    expect(outlook({ ...snapshot, air: undefined }).some((line) => line.kind === "air")).toBe(false);
   });
 });
 
